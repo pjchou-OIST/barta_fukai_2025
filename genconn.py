@@ -15,6 +15,7 @@ import argparse
 import yaml
 import h5py
 from scipy.sparse import csr_array
+import os
 
 from utils import create_weight_dataset
 
@@ -249,6 +250,7 @@ if __name__ == '__main__':
 
     data_path = f"{server_config['data_path']}"
 
+    os.makedirs(f'{data_path}/{args.folder}', exist_ok=True)
     output_filename = f'{data_path}/{args.folder}/init{args.patterns}.h5'
 
     # Write connectivity to HDF5 in COO form per block (EE, IE, II, EI)

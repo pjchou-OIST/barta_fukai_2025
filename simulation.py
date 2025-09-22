@@ -32,6 +32,7 @@ from utils import (
     load_connectivity,
     load_patterns,
     create_stim_tuples,
+    copy_h5_file, # newly added for original .h5 file to output .h5 file before appeneding
 )
 
 
@@ -121,6 +122,8 @@ def parse_args() -> argparse.Namespace:
         default=Path("config/neurons/basic.yaml"),
         help="Path to neuron YAML (overrides)",
     )
+    # Input path
+    p.add_argument("--input", required=True, help="Input HDF5 path")
 
     # Stimuli
     p.add_argument("--stimulus", type=Path, default=None, help="CSV stimulus file (optional)")
@@ -129,10 +132,10 @@ def parse_args() -> argparse.Namespace:
     p.add_argument("--stimdur", type=float, default=0.1, help="Stimulus duration (s)")
     p.add_argument("--spacing", type=float, default=1.0, help="Inter-stimulus spacing (s)")
     p.add_argument("--randstim", action="store_true", help="Randomize indices inside each pattern")
-
+    
     # Output
     p.add_argument("--patterns", type=int, required=True, help="Number of patterns (npat)")
-    p.add_argument("--output", type=Path, required=True, help="Output HDF5 path")
+    p.add_argument("--output", help="Output HDF5 path")
 
     # Mode
     p.add_argument("--single-neuron", action="store_true", help="Run single-neuron variant")
@@ -161,8 +164,8 @@ def main() -> None:
     folder_path = Path(data_path()) / namespace
 
     # Connectivity & patterns
-    conn = load_connectivity(system["name"], run.get("name", "train"), args.patterns, folder=namespace)
-    patterns = load_patterns(args.patterns, system=system["name"], run=run.get("name", "train"), folder=namespace)
+    conn = load_connectivity(args.input, system["name"], run.get("name", "train"), args.patterns, folder=namespace)
+    patterns = load_patterns(args.input, args.patterns, system=system["name"], run=run.get("name", "train"), folder=namespace)
 
     # Stimulus tuples (CSV or synthesized)
     stimulus_tuples = _build_stimuli(
@@ -188,7 +191,7 @@ def main() -> None:
     if thr_file:
         with open(thr_file, "rb") as f:
             thresholds = pickle.load(f)
-
+    
     # Assemble kwargs for run_network
     simulation_params = dict(
         weights=conn["weights"],
@@ -202,9 +205,13 @@ def main() -> None:
         **system.get("neuron", {}),
         **run.get("run", {}),
         stimuli=stimulus_tuples,
-        output_file=str(args.output),
+        output_file= f'{folder_path}/{system["name"]}_{run["name"]}{args.patterns}.h5'
     )
-
+    
+    
+    copy_h5_file(f'{folder_path}/{args.input}', simulation_params["output_file"]) 
+    print(f'Original file {args.input} copied to {simulation_params["output_file"]}')
+    
     # Optional isolated mode
     if "isolate" in run:
         # Attach var_stats for isolation (per E/I) if present on disk

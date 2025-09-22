@@ -52,7 +52,7 @@ def create_weight_dataset(group: h5py.Group, name: str, data: np.ndarray, dtype=
         compression="gzip",
     )[:] = data
 
-def load_connectivity(system: str, run: str, npat: int, folder: str = 'lognormal') -> dict:
+def load_connectivity(input_filename: str, system: str, run: str, npat: int, folder: str = 'lognormal') -> dict:
     """
     Load connectivity data from an HDF5 file.
 
@@ -74,7 +74,7 @@ def load_connectivity(system: str, run: str, npat: int, folder: str = 'lognormal
         and metadata such as the number of excitatory and inhibitory neurons.
     """
     path_to_folder = f"{data_path()}/{folder}"
-    filename = f"{path_to_folder}/{system}_{run}{npat}.h5"
+    filename = f"{path_to_folder}/{input_filename}"
 
     connectivity = {'weights': {}, 'delays': {}}
 
@@ -180,10 +180,11 @@ class Patterns:
         """Return the number of common indices between patterns a and b."""
         return np.isin(self[a], self[b]).sum()
 
-def load_patterns(npat: int, system: str = 'hebb', run: str = 'train', folder: str = 'lognormal') -> Patterns:
+def load_patterns(input_filename: str, npat: int, system: str = 'hebb', run: str = 'train', folder: str = 'lognormal') -> Patterns:
     """Load pattern indices and splits from an HDF5 file and return a Patterns object."""
     path_to_folder = f"{data_path()}/{folder}"
-    filename = f"{path_to_folder}/{system}_{run}{npat}.h5"
+    filename = f"{path_to_folder}/{input_filename}"
+    
     with h5py.File(filename, "r") as h5f:
         patterns = Patterns(
             h5f['connectivity/patterns/indices'][:],
@@ -242,3 +243,30 @@ def load_stim_file(filename: str, patterns, fraction: float):
 def load_conduct(system: str, npat: int):
     """Load conductance statistics from the var_stats directory."""
     return pd.read_csv(f'{data_path()}/lognormal/var_stats/{system}_conductances{npat}_stats.csv', index_col=[0, 1])
+
+def copy_h5_file(source_filename: str, destination_filename: str):
+    """
+    Copies the entire content of one HDF5 file to another by iterating
+    through top-level groups and datasets.
+    
+    Args:
+        source_filename: The path to the source .h5 file.
+        destination_filename: The path to the destination .h5 file.
+    """
+    try:
+        # Open source file in read-only mode
+        with h5py.File(source_filename, "r") as source_h5f:
+            # Open or create the destination file in write mode
+            with h5py.File(destination_filename, "w") as dest_h5f:
+                # Iterate through all top-level items in the source file
+                for name, item in source_h5f.items():
+                    # Copy each item (group or dataset) to the destination file
+                    source_h5f.copy(name, dest_h5f, name)
+
+                # Copy attributes from the source root to the destination root
+                for attr_name, attr_value in source_h5f.attrs.items():
+                    dest_h5f.attrs[attr_name] = attr_value
+
+        print(f"File '{source_filename}' successfully copied to '{destination_filename}'.")
+    except Exception as e:
+        print(f"An error occurred: {e}")

@@ -53,7 +53,9 @@ Run training for **2000 s** with the Vogels & Sprekeler rule (`fLHP`).
 python simulation.py \
   --system config/systems/hebb.yml \
   --run config/runtypes/default_train.yml \
-  --patterns 1000
+  --patterns 1000 \
+  --input init1000.h5
+  
 ```
 
 ---
@@ -66,7 +68,8 @@ Run the network without external training input for **10,000 s** to obtain spont
 python simulation.py \
   --system config/systems/hebb.yml \
   --run config/runtypes/spontaneous.yml \
-  --patterns 1000
+  --patterns 1000 \
+  --input hebb_train1000.h5
 ```
 
 ---

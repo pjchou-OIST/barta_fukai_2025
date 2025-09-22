@@ -632,6 +632,7 @@ def run_network(
         'x': 1,
     }
 
+    
     with h5py.File(output_file, "a") as h5f:
         h5f.create_dataset("spikes_exc", (0, 2), maxshape=(None, 2), dtype="float32", chunks=True)
         h5f.create_dataset("spikes_inh", (0, 2), maxshape=(None, 2), dtype="float32", chunks=True)
@@ -734,6 +735,7 @@ def run_network(
         logging.info(
             f"Inhibitory neurons firing rate during chunk: ({mean_rate_inh} +/- {rate_std_inh})Hz"
         )
+        
 
         # Append this chunk to HDF5
         with h5py.File(output_file, "a") as h5f:
