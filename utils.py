@@ -246,8 +246,8 @@ def load_conduct(system: str, npat: int):
 
 def copy_h5_file(source_filename: str, destination_filename: str):
     """
-    Copies the entire content of one HDF5 file to another by iterating
-    through top-level groups and datasets.
+    Copies the entire content of one HDF5 file to another,
+    excluding "spikes_exc" and "spikes_inh" datasets.
     
     Args:
         source_filename: The path to the source .h5 file.
@@ -260,6 +260,11 @@ def copy_h5_file(source_filename: str, destination_filename: str):
             with h5py.File(destination_filename, "w") as dest_h5f:
                 # Iterate through all top-level items in the source file
                 for name, item in source_h5f.items():
+                    # 判斷是否為要排除的資料集
+                    if name in ["spikes_exc", "spikes_inh"]:
+                        print(f"Skipping dataset: {name}")
+                        continue  # 如果是，跳過這次迴圈
+                    
                     # Copy each item (group or dataset) to the destination file
                     source_h5f.copy(name, dest_h5f, name)
 
