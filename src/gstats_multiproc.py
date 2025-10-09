@@ -108,6 +108,7 @@ if __name__ == '__main__':
     # Input/Output paths
     folder_path = data_path(args.namespace)
     input_file  = f"{folder_path}/{args.name}{args.patterns}.h5"
+    os.makedirs(f"{folder_path}/var_stats", exist_ok=True)
     output_file = f"{folder_path}/var_stats/{args.name}{args.patterns}_stats.csv"
     
 

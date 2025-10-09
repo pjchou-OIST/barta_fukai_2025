@@ -194,7 +194,7 @@ class Patterns:
         """Return the number of common indices between patterns a and b."""
         return np.isin(self[a], self[b]).sum()
 
-def load_patterns(npat: int, namespace: str) -> Patterns:
+def load_patterns(npat: int, namespace: str = 'lognormal') -> Patterns:
     """Load pattern indices and splits from an HDF5 file and return a Patterns object."""
     path_to_folder = data_path(namespace)
     filename = f"{path_to_folder}/init{npat}.h5"

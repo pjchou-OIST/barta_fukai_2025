@@ -4,7 +4,7 @@ from pandas import read_csv
 import h5py
 import numpy as np
 
-from src.network_ch import run_network
+from network_ch import run_network
 from utils import load_connectivity, load_patterns, create_stim_tuples
 
 
