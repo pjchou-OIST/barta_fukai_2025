@@ -103,7 +103,7 @@ Use the Minimum Covariance Determinant (MCD) estimator to extract robust statist
 ```bash
 python src/gstats_multiproc.py \
   --name hebb_conductances \
-  --folder lognormal \ # no such input argument
+  --folder lognormal \ # change to --namespace
   --patterns 1000
 ```
 
