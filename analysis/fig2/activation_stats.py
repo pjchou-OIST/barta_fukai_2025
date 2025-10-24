@@ -4,9 +4,25 @@ import h5py
 from scipy import stats
 from scipy.optimize import nnls
 import pickle
+import sys
+import os
 
+current_dir = os.path.dirname(os.path.abspath(__file__)) # -> /my_project/src/app
+src_dir = os.path.dirname(current_dir)                    # -> /my_project/src
+parent_dir = os.path.dirname(src_dir)                   # -> /my_project
+utils_path = os.path.join(parent_dir, 'src/')
+
+sys.path.append(utils_path)
 from utils import *
-from analysis import get_act_counts
+
+
+def act_counts_at_time(act_times, pattern_ixs, npat, measure_time, namespace):
+    if measure_time is not None:
+        mask = act_times < measure_time
+        pattern_ixs = pattern_ixs[mask]
+
+    act_counts = pd.Series(pattern_ixs).value_counts().reindex(np.arange(npat), fill_value=0).values
+    return act_counts
 
 def estimate_entropy(*x_list):
     k_list = []
@@ -42,10 +58,11 @@ if __name__ == '__main__':
 
     new_xx = np.linspace(0, measure_time, 201)
 
-    for npat in [800, 1000, 1200, 1400, 1600, 1800, 2000, 2200, 2400, 2600, 2800, 3000]:
+    for npat in [1000]:
+    # for npat in [800, 1000, 1200, 1400, 1600, 1800, 2000, 2200, 2400, 2600, 2800, 3000]:
     # for npat in [1000, 1200, 1400, 1600, 1800, 2000]:
 
-        for system in ['hebb','hebb_smooth_rate','rate','shuffle']:
+        for system in ['hebb']:
             if system == 'shuffle':
                 run = 'spontaneous_shuffle'
                 act_times, durations, pattern_ixs = load_activation('hebb', npat, run, namespace=namespace)
@@ -58,10 +75,10 @@ if __name__ == '__main__':
 
 
             if len(act_times) > 0:
-                act_counts = get_act_counts(act_times, pattern_ixs, npat, measure_time=1000000, namespace=namespace)
-                act_counts7500 = get_act_counts(act_times, pattern_ixs, npat, measure_time=750000, namespace=namespace)
-                act_counts5000 = get_act_counts(act_times, pattern_ixs, npat, measure_time=500000, namespace=namespace)
-                act_counts2500 = get_act_counts(act_times, pattern_ixs, npat, measure_time=250000, namespace=namespace)
+                act_counts = act_counts_at_time(act_times, pattern_ixs, npat, measure_time=1000000, namespace=namespace)
+                act_counts7500 = act_counts_at_time(act_times, pattern_ixs, npat, measure_time=750000, namespace=namespace)
+                act_counts5000 = act_counts_at_time(act_times, pattern_ixs, npat, measure_time=500000, namespace=namespace)
+                act_counts2500 = act_counts_at_time(act_times, pattern_ixs, npat, measure_time=250000, namespace=namespace)
 
                 if act_counts2500.sum() > 0:
                     entropy, entropy_k = estimate_entropy(act_counts2500, act_counts5000, act_counts7500, act_counts)
@@ -121,12 +138,13 @@ if __name__ == '__main__':
 
                 inter_event_intervals[(system, npat)] = np.array([])
 
-    pd.Series(res).unstack(level=[0, 2]).to_csv('plotting/data/activation_stats.csv')
-    pd.DataFrame(interpolations, index=new_xx).to_csv('plotting/data/gradual.csv')
+    os.makedirs('new/plotting/data', exist_ok=True)
+    pd.Series(res).unstack(level=[0, 2]).to_csv('new/plotting/data/activation_stats.csv')
+    pd.DataFrame(interpolations, index=new_xx).to_csv('new/plotting/data/gradual.csv')
 
     df = pd.DataFrame(entropies).T.sort_index()
     df['k'] = df['k'].astype(int)
     print(df.to_latex(float_format="{:.2f}".format))
 
-    with open('plotting/data/iais.pkl', 'wb') as f:
+    with open('new/plotting/data/iais.pkl', 'wb') as f:
         pickle.dump(inter_event_intervals, f)

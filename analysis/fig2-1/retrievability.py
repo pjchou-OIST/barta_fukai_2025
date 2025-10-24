@@ -2,6 +2,15 @@ import numpy as np
 import pickle
 from tqdm import tqdm
 import h5py
+import sys
+import os
+
+current_dir = os.path.dirname(os.path.abspath(__file__)) # -> /my_project/src/app
+src_dir = os.path.dirname(current_dir)                    # -> /my_project/src
+parent_dir = os.path.dirname(src_dir)                   # -> /my_project
+utils_path = os.path.join(parent_dir, 'src/')
+
+sys.path.append(utils_path)
 
 from analysis import get_spike_counts, get_act_counts
 from utils import data_path, load_patterns, create_stim_tuples
@@ -66,6 +75,7 @@ if __name__ == '__main__':
 
                 ns_activation = (nsr.reshape(((~mask).sum(), 15, 10)).sum(axis=2) > 0).mean(axis=0)
                 res[npat][system]['nsact'].append(np.repeat(ns_activation, 10))
-
-    with open('plotting/data/retrieve2.pkl', 'wb') as f:
+            break
+        break
+    with open('new/plotting/data/retrieve2.pkl', 'wb') as f:
         pickle.dump(res, f)

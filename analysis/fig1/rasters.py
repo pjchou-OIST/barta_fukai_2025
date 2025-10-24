@@ -3,7 +3,15 @@ from scipy import sparse
 import h5py
 from tqdm import tqdm
 import pickle
+import sys
+import os
 
+current_dir = os.path.dirname(os.path.abspath(__file__)) # -> /my_project/src/app
+src_dir = os.path.dirname(current_dir)                    # -> /my_project/src
+parent_dir = os.path.dirname(src_dir)                   # -> /my_project
+utils_path = os.path.join(parent_dir, 'src/')
+
+sys.path.append(utils_path)
 from utils import load_patterns, data_path
 from analysis import get_spike_counts
 from eigenvalues import get_W
@@ -28,8 +36,9 @@ def load_spikes(system, npat, start, end, namespace):
 
 if __name__ == '__main__':
     namespace = 'lognormal'
-    for system in tqdm(['rate','hebb_smooth_rate','hebb']):
+    for system in tqdm(['hebb']):
         spikes_exc, spikes_inh = load_spikes(system, 1000, 0, 20, namespace)
-
-        np.savetxt(f'plotting/data/rasters/{system}_excitatory.csv', spikes_exc)
-        np.savetxt(f'plotting/data/rasters/{system}_inhibitory.csv', spikes_inh)
+        
+        os.makedirs('new/plotting/data/rasters', exist_ok=True)
+        np.savetxt(f'new/plotting/data/rasters/{system}_excitatory.csv', spikes_exc)
+        np.savetxt(f'new/plotting/data/rasters/{system}_inhibitory.csv', spikes_inh)

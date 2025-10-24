@@ -4,13 +4,21 @@ import h5py
 from tqdm import tqdm
 import pickle
 from itertools import product
+import sys
+import os
 
+current_dir = os.path.dirname(os.path.abspath(__file__)) # -> /my_project/src/app
+src_dir = os.path.dirname(current_dir)                    # -> /my_project/src
+parent_dir = os.path.dirname(src_dir)                   # -> /my_project
+utils_path = os.path.join(parent_dir, 'src/')
+
+sys.path.append(utils_path)
 from utils import load_patterns, data_path
 from analysis import get_spike_counts
 from eigenvalues import get_W
 
 
-def spike_counts(system='rate', npat=2000, max_time=1000):
+def spike_counts(system='hebb', npat=2000, max_time=1000):
     folder = data_path(namespace)
     filename = f"{folder}/{system}_spontaneous{npat}.h5"
 
@@ -41,7 +49,7 @@ if __name__ == '__main__':
 
     all_res = {}
 
-    for npat, system in product([1000, 1400, 2000], ['rate','hebb']):
+    for npat, system in product([1000, 1400, 2000], ['hebb']):
         patterns = load_patterns(npat, namespace=namespace)
 
         sc_exc = spike_counts(system=system, npat=npat, max_time=1000)
@@ -93,5 +101,5 @@ if __name__ == '__main__':
 
             all_res[(npat, system)].append(res)
 
-    with open('plotting/data/overlap_activity.pkl', 'wb') as f:
+    with open('new/plotting/data/overlap_activity.pkl', 'wb') as f:
         pickle.dump(all_res, f)

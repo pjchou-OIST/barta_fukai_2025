@@ -1,7 +1,15 @@
 import argparse
 import numpy as np
 import time
+import sys
+import os
 
+current_dir = os.path.dirname(os.path.abspath(__file__)) # -> /my_project/src/app
+src_dir = os.path.dirname(current_dir)                    # -> /my_project/src
+parent_dir = os.path.dirname(src_dir)                   # -> /my_project
+utils_path = os.path.join(parent_dir, 'src/')
+
+sys.path.append(utils_path)
 from utils import *
 from analysis import *
 
@@ -14,15 +22,16 @@ if __name__ == '__main__':
     logging.basicConfig(level=logging.INFO)
 
     parser = argparse.ArgumentParser()
-    parser.add_argument('--system', type=str)
+    parser.add_argument('--system', type=str, default='hebb')
     parser.add_argument('--namespace', type=str, default='lognormal')
-    parser.add_argument('--npat', type=int)
+    parser.add_argument('--npat', type=int, default=1000)
     args = parser.parse_args()
 
     logger.info(f"Arguments received: system={args.system}, npat={args.npat}")
 
     fr = get_firing_rates(args.system, args.npat, namespace=args.namespace)
-    np.savetxt(f'plotting/data/firing_rates/{args.system}{args.npat}.csv', np.concatenate([fr['exc'], fr['inh']]))
+    os.makedirs('new/plotting/data/firing_rates', exist_ok=True)
+    np.savetxt(f'new/plotting/data/firing_rates/{args.system}{args.npat}.csv', np.concatenate([fr['exc'], fr['inh']]))
     logger.info("Firing rates saved.")
 
     duration = time.time() - start_time

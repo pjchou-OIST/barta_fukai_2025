@@ -1,13 +1,22 @@
 import h5py
 import numpy as np
+import sys
+import os
 
+current_dir = os.path.dirname(os.path.abspath(__file__)) # -> /my_project/src/app
+src_dir = os.path.dirname(current_dir)                    # -> /my_project/src
+parent_dir = os.path.dirname(src_dir)                   # -> /my_project
+utils_path = os.path.join(parent_dir, 'src/')
+
+sys.path.append(utils_path)
 from utils import data_path, load_patterns
 from analysis import get_spike_counts
 
 
 if __name__ == '__main__':
     namespace = 'lognormal'
-    npat = 1800
+    # npat = 1800
+    npat = 1000
     system = 'hebb'
 
     path_to_folder = data_path(namespace)
@@ -55,5 +64,6 @@ if __name__ == '__main__':
 
         pattern_activations.append(act_trace)
 
-    np.savetxt('plotting/data/assembly_traces/rates.csv', pattern_rates)
-    np.savetxt('plotting/data/assembly_traces/activations.csv', pattern_activations)
+    os.makedirs('new/plotting/data/assembly_traces', exist_ok=True)
+    np.savetxt('new/plotting/data/assembly_traces/rates.csv', pattern_rates)
+    np.savetxt('new/plotting/data/assembly_traces/activations.csv', pattern_activations)

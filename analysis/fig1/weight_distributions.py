@@ -1,7 +1,15 @@
 import argparse
 import numpy as np
 import time
+import sys
+import os
 
+current_dir = os.path.dirname(os.path.abspath(__file__)) # -> /my_project/src/app
+src_dir = os.path.dirname(current_dir)                    # -> /my_project/src
+parent_dir = os.path.dirname(src_dir)                   # -> /my_project
+utils_path = os.path.join(parent_dir, 'src/')
+
+sys.path.append(utils_path)
 from utils import *
 from analysis import *
 from eigenvalues import get_W
@@ -15,9 +23,9 @@ if __name__ == '__main__':
     logging.basicConfig(level=logging.INFO)
 
     parser = argparse.ArgumentParser()
-    parser.add_argument('--system', type=str)
+    parser.add_argument('--system', type=str, default='hebb')
     parser.add_argument('--namespace', type=str, default='lognormal')
-    parser.add_argument('--npat', type=int)
+    parser.add_argument('--npat', type=int, default=1000)
     args = parser.parse_args()
 
 
@@ -32,7 +40,10 @@ if __name__ == '__main__':
     Wee = W[:8000,:8000]
     totexcit = Wee.sum(axis=1)
 
-    np.savetxt(f'plotting/data/ei_weights/{args.system}{args.npat}.csv', wei)
-    np.savetxt(f'plotting/data/tot_inhib/{args.system}{args.npat}.csv', totinhib)
-    np.savetxt(f'plotting/data/tot_excit/{args.system}{args.npat}.csv', totinhib)
+    os.makedirs('new/plotting/data/ei_weights', exist_ok=True)
+    os.makedirs('new/plotting/data/tot_inhib', exist_ok=True)
+    os.makedirs('new/plotting/data/tot_excit', exist_ok=True)
+    np.savetxt(f'new/plotting/data/ei_weights/{args.system}{args.npat}.csv', wei)
+    np.savetxt(f'new/plotting/data/tot_inhib/{args.system}{args.npat}.csv', totinhib)
+    np.savetxt(f'new/plotting/data/tot_excit/{args.system}{args.npat}.csv', totexcit)
     logger.info("Weights saved.")
