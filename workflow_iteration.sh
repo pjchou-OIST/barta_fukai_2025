@@ -32,7 +32,7 @@ SBATCH_OPTIONS=$3
 # ===================================================
 #           <<< 2. 根據參數設定變數 >>>
 # ===================================================
-SYSTEM_CONFIG="config/systems/${SYSTEM_NAME}.yml"
+SYSTEM_CONFIG="config/std_systems/${SYSTEM_NAME}.yml"
 GSTATS_NAME="${SYSTEM_NAME}_conductances"
 
 # --- 固定的設定檔 ---

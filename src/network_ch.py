@@ -590,8 +590,18 @@ def run_network(
             w : 1
             alpha : 1
             '''
+            
+        U_SE, tau_rec_std = 0.5, 800*ms # Standard STD parameters
+        ee_model = '''
+            w : 1
+            dx_std/dt = (1 - x_std) / tau_rec_std : 1 (clock-driven)
+            '''
+        ee_on_pre = '''
+            ge += w * x_std * nS
+            x_std -= U_SE * x_std
+            '''
 
-        See = Synapses(G_exc, G_exc, model='w : 1', on_pre='ge += w*nS', method='exponential_euler')
+        See = Synapses(G_exc, G_exc, model=ee_model, on_pre=ee_on_pre, method='exponential_euler')
         Sie = Synapses(G_exc, G_inh, model='w : 1', on_pre='ge += w*nS', method='exponential_euler')
         Sei = Synapses(G_inh, G_exc, model=model_ei, on_pre=pre_eqs_inh, on_post=post_eqs_inh, method='exponential_euler')
 
