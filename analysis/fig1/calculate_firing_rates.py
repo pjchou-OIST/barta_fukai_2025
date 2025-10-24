@@ -30,8 +30,8 @@ if __name__ == '__main__':
     logger.info(f"Arguments received: system={args.system}, npat={args.npat}")
 
     fr = get_firing_rates(args.system, args.npat, namespace=args.namespace)
-    os.makedirs('new/plotting/data/firing_rates', exist_ok=True)
-    np.savetxt(f'new/plotting/data/firing_rates/{args.system}{args.npat}.csv', np.concatenate([fr['exc'], fr['inh']]))
+    os.makedirs('add-STD/plotting/data/firing_rates', exist_ok=True)
+    np.savetxt(f'add-STD/plotting/data/firing_rates/{args.system}{args.npat}.csv', np.concatenate([fr['exc'], fr['inh']]))
     logger.info("Firing rates saved.")
 
     duration = time.time() - start_time
