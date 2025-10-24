@@ -21,7 +21,7 @@ import logging
 logger = logging.getLogger(__name__)
 
 
-def get_act_counts(system, npat, namespace, run='spontaneous'):
+def get_act_counts(system, npat, namespace, run='spontaneous', measure_time=None):
     """Return the number of activation events per pattern.
 
     This is computed by counting occurrences of each pattern index in `pattern_ixs`.
