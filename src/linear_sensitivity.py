@@ -22,7 +22,7 @@ Overview
 
 Notes
 -----
-- Logging writes per‑process logs to `logs/<pid>_linapprox.log`.
+- Logging writes per‑process logs to `linear_logs/<pid>_linapprox.log`.
 """
 
 import numpy as np
@@ -41,7 +41,8 @@ from utils import *  # data_path, memory_usage, etc.
 
 # Set up logging to a per‑process file (useful when running via multiprocessing)
 process_id = os.getpid()
-log_filename = f"logs/{process_id}_linapprox.log"
+os.makedirs('linear_logs', exist_ok=True)
+log_filename = f"linear_logs/{process_id}_linapprox.log"
 logging.basicConfig(
     filename=log_filename,
     level=logging.INFO,
@@ -140,6 +141,7 @@ def get_activations(system, patterns, namespace, remaining_tasks):
     results['activation_exc'] = np.array(results['activation_exc'])
     results['activation_inh'] = np.array(results['activation_inh'])
 
+    os.makedirs(f"{folder_path}/linear_approx", exist_ok=True)
     # Persist to CSV with a MultiIndex
     pd.DataFrame(results).set_index(['postsynaptic','n_index']).to_csv(
         f"{folder_path}/linear_approx/{system}{patterns}.csv"
