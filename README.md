@@ -135,6 +135,21 @@ python src/linear_sensitivity.py \
 
 ---
 
+
+### 9. stimuli100ms simulations
+
+Run the network with isolated neurons and small perturbations to excitatory and inhibitory input.
+
+```bash
+python src/simulation.py \
+  --system config/systems/hebb.yml \
+  --run config/runtypes/stimuli100ms.yml \
+  --patterns 1000
+```
+
+---
+
+
 ## Notes
 
 * Configurations are organized under `config/systems/` (network setup) and `config/runtypes/` (simulation protocols).
