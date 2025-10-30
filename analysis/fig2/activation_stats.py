@@ -58,9 +58,9 @@ if __name__ == '__main__':
 
     new_xx = np.linspace(0, measure_time, 201)
 
-    for npat in [1000]:
+    # for npat in [1000]:
     # for npat in [800, 1000, 1200, 1400, 1600, 1800, 2000, 2200, 2400, 2600, 2800, 3000]:
-    # for npat in [1000, 1200, 1400, 1600, 1800, 2000]:
+    for npat in [1000, 1200, 1400, 1600, 1800, 2000]:
 
         for system in ['hebb']:
             if system == 'shuffle':
@@ -138,13 +138,13 @@ if __name__ == '__main__':
 
                 inter_event_intervals[(system, npat)] = np.array([])
 
-    os.makedirs('new/plotting/data', exist_ok=True)
-    pd.Series(res).unstack(level=[0, 2]).to_csv('new/plotting/data/activation_stats.csv')
-    pd.DataFrame(interpolations, index=new_xx).to_csv('new/plotting/data/gradual.csv')
+    os.makedirs('add-STD/plotting/data', exist_ok=True)
+    pd.Series(res).unstack(level=[0, 2]).to_csv('add-STD/plotting/data/activation_stats.csv')
+    pd.DataFrame(interpolations, index=new_xx).to_csv('add-STD/plotting/data/gradual.csv')
 
     df = pd.DataFrame(entropies).T.sort_index()
     df['k'] = df['k'].astype(int)
     print(df.to_latex(float_format="{:.2f}".format))
 
-    with open('new/plotting/data/iais.pkl', 'wb') as f:
+    with open('add-STD/plotting/data/iais.pkl', 'wb') as f:
         pickle.dump(inter_event_intervals, f)

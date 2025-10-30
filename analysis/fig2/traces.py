@@ -36,7 +36,6 @@ if __name__ == '__main__':
     sc = sc[:,1500:]
 
     run = 'spontaneous'
-    system = 'hebb'
 
     patterns = load_patterns(npat, namespace=namespace)
     filename = f"{path_to_folder}/{system}_{run}{npat}_activations.h5"
@@ -64,6 +63,6 @@ if __name__ == '__main__':
 
         pattern_activations.append(act_trace)
 
-    os.makedirs('new/plotting/data/assembly_traces', exist_ok=True)
-    np.savetxt('new/plotting/data/assembly_traces/rates.csv', pattern_rates)
-    np.savetxt('new/plotting/data/assembly_traces/activations.csv', pattern_activations)
+    os.makedirs('add-STD/plotting/data/assembly_traces', exist_ok=True)
+    np.savetxt('add-STD/plotting/data/assembly_traces/rates.csv', pattern_rates)
+    np.savetxt('add-STD/plotting/data/assembly_traces/activations.csv', pattern_activations)
