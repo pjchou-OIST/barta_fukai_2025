@@ -61,7 +61,11 @@ def seconds_to_hms(seconds):
     str
         Time formatted as ``"HH:MM:SS"``.
     """
-    return time.strftime("%H:%M:%S", time.gmtime(seconds))
+    seconds = int(seconds)
+    hours, rem = divmod(seconds, 3600) 
+    minutes, sec = divmod(rem, 60)
+    
+    return f"{hours:02d}:{minutes:02d}:{sec:02d}"
 
 
 def get_stim_matrix(stimuli, N_exc, simulation_time, dt=0.1):
@@ -688,6 +692,10 @@ def run_network(
 
     net = Network(collect())
 
+    logging.info("Explicitly building C++ project before loop...")
+    get_device().build(compile=True, run=False)
+    logging.info("Build complete.")
+    
     logging.info(
         f"Starting network simulation for {simulation_time}s in {num_chunks} chunks of {chunk_size}s each."
     )
@@ -726,24 +734,24 @@ def run_network(
         inh_spikes = np.column_stack((spikes_inh_mon.i, spikes_inh_mon.t / second))
 
         # Compute coarse mean rates per chunk for quick health-check logging
-        _, sc_exc = get_spike_counts(
-            exc_spikes[:, 0], exc_spikes[:, 1] - elapsed_time + chunk_size, t_max=chunk_size, N=N_exc, dt=1
-        )
-        _, sc_inh = get_spike_counts(
-            inh_spikes[:, 0], inh_spikes[:, 1] - elapsed_time + chunk_size, t_max=chunk_size, N=N_inh, dt=1
-        )
+        # _, sc_exc = get_spike_counts(
+        #     exc_spikes[:, 0], exc_spikes[:, 1] - elapsed_time + chunk_size, t_max=chunk_size, N=N_exc, dt=1
+        # )
+        # _, sc_inh = get_spike_counts(
+        #     inh_spikes[:, 0], inh_spikes[:, 1] - elapsed_time + chunk_size, t_max=chunk_size, N=N_inh, dt=1
+        # )
 
-        mean_rate_exc = sc_exc.mean()
-        mean_rate_inh = sc_inh.mean()
-        rate_std_exc = sc_exc.mean(axis=1).std(axis=0)
-        rate_std_inh = sc_inh.mean(axis=1).std(axis=0)
+        # mean_rate_exc = sc_exc.mean()
+        # mean_rate_inh = sc_inh.mean()
+        # rate_std_exc = sc_exc.mean(axis=1).std(axis=0)
+        # rate_std_inh = sc_inh.mean(axis=1).std(axis=0)
 
-        logging.info(
-            f"Excitatory neurons firing rate during chunk: ({mean_rate_exc} +/- {rate_std_exc})Hz"
-        )
-        logging.info(
-            f"Inhibitory neurons firing rate during chunk: ({mean_rate_inh} +/- {rate_std_inh})Hz"
-        )
+        # logging.info(
+        #     f"Excitatory neurons firing rate during chunk: ({mean_rate_exc} +/- {rate_std_exc})Hz"
+        # )
+        # logging.info(
+        #     f"Inhibitory neurons firing rate during chunk: ({mean_rate_inh} +/- {rate_std_inh})Hz"
+        # )
 
         # Append this chunk to HDF5
         with h5py.File(output_file, "a") as h5f:
