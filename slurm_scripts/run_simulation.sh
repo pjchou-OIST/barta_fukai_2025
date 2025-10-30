@@ -1,16 +1,13 @@
 #!/bin/bash
 #SBATCH -p compute
-#SBATCH -t 48:00:00
+#SBATCH -t 72:00:00
 #SBATCH --mem=250G
-#SBATCH -c 5
 #SBATCH -C xeon
 #SBATCH --open-mode=append
 #SBATCH --job-name=hebb_simulation
 #SBATCH --nodes=1
 #SBATCH --ntasks=1
 #SBATCH --cpus-per-task=32
-#SBATCH --output=hebb_stimuli100ms_output_%j.log
-#SBATCH --error=hebb_stimuli100ms_error_%j.log
 
 echo "Starting job on $(hostname) at $(date)"
 
@@ -19,6 +16,7 @@ echo "Running simulation with:"
 echo "  System: $1"
 echo "  Run:    $2"
 echo "  Patterns: $3"
+export OMP_NUM_THREADS=$SLURM_CPUS_PER_TASK
 pixi run python src/simulation.py \
   --system $1 \
   --run $2 \
