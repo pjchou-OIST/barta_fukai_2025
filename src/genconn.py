@@ -20,7 +20,7 @@ from scipy.sparse import csr_array
 from utils import *
 
 
-def genconn(N, N_exc, P, f, sparsity, weights, circular=False, rescale=True, fix_size=False, spread=0, seed=42, distribution='lognormal'):
+def genconn(N, N_exc, P, f, sparsity, weights, circular=False, chain=False, rescale=True, fix_size=False, spread=0, seed=42, distribution='lognormal'):
     """Construct a dense weight matrix and embedded patterns.
 
     Generate connectivity by computing Hebbian co‑activations within E→E, then
@@ -95,7 +95,23 @@ def genconn(N, N_exc, P, f, sparsity, weights, circular=False, rescale=True, fix
         Z0[y,x] += 1 * q
 
     # Optional circular couplings between successive patterns (both directions)
-    if circular:
+    print('Current setting: circular =', circular, ', chain =', chain)
+    if chain:
+        # P[t] <-> P[t+1] for t=0 to P-2
+        for i in tqdm(range(P - 1), total=P-1):
+            pattern1 = patterns[i]
+            pattern2 = patterns[i+1]
+
+            neurons1 = np.argwhere(pattern1).flatten()
+            neurons2 = np.argwhere(pattern2).flatten()
+            pairs = np.array(list(product(neurons1, neurons2)))
+
+            if pairs.size > 0:
+                x, y = pairs.T
+                Z0[x,y] += 1.0 
+                Z0[y,x] += 1.0
+                
+    elif circular:
         for pattern1, pattern2 in tqdm(zip(patterns, np.roll(patterns, shift=1, axis=0)), total=len(patterns)):
             pairs = np.array(list(product(np.argwhere(pattern1).flatten(), np.argwhere(pattern2).flatten())))
             x, y = pairs.T
@@ -205,7 +221,7 @@ def get_aux_prop(Z):
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
 
-    parser.add_argument('--config', type=str, default='config/networks/basic.yml')
+    parser.add_argument('--config', type=str, default='config/networks/chain.yml')
     parser.add_argument('-p', '--patterns', type=int, default=2000)
     parser.add_argument('--namespace', type=str, default='lognormal')
     parser.add_argument('--seed', type=int, default=42)
@@ -242,7 +258,7 @@ if __name__ == '__main__':
 
     # Build connectivity and patterns (dense)
     Z, patterns = genconn(N=N, N_exc=N_exc, P=args.patterns, f=config['assemblies']['pattern_sparsity'],
-                sparsity=network_sparsity, circular=config['circular'], seed=args.seed,
+                sparsity=network_sparsity, circular=config['circular'], chain=config['chain'], seed=args.seed,
                 weights=config['weights'], fix_size=config['fix_size'], spread=config['assemblies']['spread'],
                 distribution=config['distribution'])
 
@@ -257,7 +273,7 @@ if __name__ == '__main__':
         'E': (0,8000),
         'I': (8000,10000)
     }
-
+    
     # Resolve base data path
     with open('config/server_config.yaml') as f:
         server_config = yaml.safe_load(f)
@@ -266,6 +282,7 @@ if __name__ == '__main__':
 
     create_directory(folder_path)
 
+    os.makedirs(folder_path, exist_ok=True)
     output_filename = f'{folder_path}/init{args.patterns}.h5'
 
     # Write connectivity to HDF5 in COO form per block (EE, IE, II, EI)
