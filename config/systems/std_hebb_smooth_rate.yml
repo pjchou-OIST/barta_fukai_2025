@@ -1,5 +1,6 @@
 neuron :
-  alpha1 : True
+  use_std : True
+  alpha1 : False
   alpha2 : 0.3
   reset_potential : True
   tau_stdp_ms : 10000

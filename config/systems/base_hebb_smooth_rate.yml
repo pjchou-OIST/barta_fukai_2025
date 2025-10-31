@@ -1,4 +1,5 @@
 neuron :
+  use_std : False
   alpha1 : False
   alpha2 : 0.3
   reset_potential : True
