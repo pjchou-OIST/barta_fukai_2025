@@ -607,7 +607,8 @@ def run_network(
             w : 1
             alpha : 1
             '''
-            
+        
+        logging.info(f"Settings: alpha1={alpha1}, use_std={use_std}")
         if use_std:
             logging.info(f"Enabling STD on E-E synapses with U_SE={U_SE_val}, tau_rec={tau_rec_std_ms}ms.")
             # 這些 Python 變數 (U_SE, tau_rec_std) 會被 Brian2 的 local namespace 找到
