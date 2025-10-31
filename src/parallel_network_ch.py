@@ -605,7 +605,8 @@ def run_network(
             alpha : 1
             '''
             
-        U_SE, tau_rec_std = 0.5, 800*ms # Standard STD parameters
+        # U_SE, tau_rec_std = 0.5, 800*ms # Standard STD parameters
+        U_SE, tau_rec_std = 0.07436, 800*ms # Standard STD parameters
         ee_model = '''
             w : 1
             dx_std/dt = (1 - x_std) / tau_rec_std : 1 (clock-driven)
