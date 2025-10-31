@@ -12,4 +12,4 @@ background:
   background_poisson : 2
   poisson_amplitude : 0.3
 target_rate : 3
-name : rate
+name : fstd_rate
