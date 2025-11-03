@@ -16,6 +16,7 @@ __pycache__/
 logs/
 tmp/
 add-STD/
+chain/
 output/
 builds/
 *.log
