@@ -18,6 +18,7 @@ tmp/
 add-STD/
 output/
 builds/
+chain/
 *.log
 *.out
 *.err
