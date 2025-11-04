@@ -20,7 +20,7 @@ from scipy.sparse import csr_array
 from utils import *
 
 
-def genconn(N, N_exc, P, f, sparsity, weights, circular=False, chain=False, rescale=True, fix_size=False, spread=0, seed=42, distribution='lognormal'):
+def genconn(N, N_exc, P, f, sparsity, weights, circular=False, chain=False, segmented_chain=False, chain_length=10, rescale=True, fix_size=False, spread=0, seed=42, distribution='lognormal'):
     """Construct a dense weight matrix and embedded patterns.
 
     Generate connectivity by computing Hebbian co‑activations within E→E, then
@@ -96,7 +96,41 @@ def genconn(N, N_exc, P, f, sparsity, weights, circular=False, chain=False, resc
 
     # Optional circular couplings between successive patterns (both directions)
     print('Current setting: circular =', circular, ', chain =', chain)
-    if chain:
+    inter_pattern_strength = 1.0
+    
+    if segmented_chain:
+        print(f"Segmented chain coupling (chain length: {chain_length}) (Inter-pattern strength: {inter_pattern_strength})")
+        if P % chain_length != 0:
+            print(f"Warning: Total number of patterns ({P}) is not divisible by chain_length ({chain_length}).")
+        
+        num_segments = P // chain_length
+        
+        for seg_idx in tqdm(range(num_segments), total=num_segments, desc="Chain Segments"):
+            # Calculate the starting pattern index for this segment
+            start_pattern_idx = seg_idx * chain_length
+            
+            # Inner loop: create (L-1) bidirectional connections within this segment
+            # e.g. L=10, i goes from 0 to 8
+            for i in range(chain_length - 1):
+                # Connect (P[0], P[1]), (P[1], P[2]), ..., (P[8], P[9])
+                # Then outer loop +1, connect (P[10], P[11]) ... (P[18], P[19])
+                idx1 = start_pattern_idx + i
+                idx2 = start_pattern_idx + i + 1
+                
+                pattern1 = patterns[idx1]
+                pattern2 = patterns[idx2]
+
+                neurons1 = np.argwhere(pattern1).flatten()
+                neurons2 = np.argwhere(pattern2).flatten()
+                pairs = np.array(list(product(neurons1, neurons2)))
+
+                if pairs.size > 0:
+                    x, y = pairs.T
+                    # Build bidirectional (symmetric) connections
+                    Z0[x,y] += inter_pattern_strength 
+                    Z0[y,x] += inter_pattern_strength
+        
+    elif chain:
         # P[t] <-> P[t+1] for t=0 to P-2
         for i in tqdm(range(P - 1), total=P-1):
             pattern1 = patterns[i]
@@ -221,7 +255,7 @@ def get_aux_prop(Z):
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
 
-    parser.add_argument('--config', type=str, default='config/networks/chain.yml')
+    parser.add_argument('--config', type=str, default='config/networks/segment.yml')
     parser.add_argument('-p', '--patterns', type=int, default=2000)
     parser.add_argument('--namespace', type=str, default='lognormal')
     parser.add_argument('--seed', type=int, default=42)
@@ -256,9 +290,27 @@ if __name__ == '__main__':
     # Block sparsities: (E←E, I←E, I←I, E←I)
     network_sparsity = (ee_sparse, ie_sparse, ii_sparse, ei_sparse)
 
+    # Check coupling types
+    segmented_chain_coupling = config.get('segmented_chain', False)  
+    chain_length = config.get('chain_length', 10)                     
+    chain_coupling = config.get('chain', False)
+    circular_coupling = config.get('circular', False)
+
+    if (segmented_chain_coupling + chain_coupling + circular_coupling) > 1:
+        print("Warning: Multiple coupling types enabled. Priority: segmented_chain > chain > circular.")
+        if segmented_chain_coupling:
+            chain_coupling = False
+            circular_coupling = False
+        elif chain_coupling:
+            chain_coupling = False
+            circular_coupling = False
+        elif chain_coupling:
+            circular_coupling = False
+            
     # Build connectivity and patterns (dense)
     Z, patterns = genconn(N=N, N_exc=N_exc, P=args.patterns, f=config['assemblies']['pattern_sparsity'],
-                sparsity=network_sparsity, circular=config['circular'], chain=config['chain'], seed=args.seed,
+                sparsity=network_sparsity, circular=circular_coupling, chain=chain_coupling,
+                segmented_chain=segmented_chain_coupling, chain_length=chain_length, seed=args.seed,
                 weights=config['weights'], fix_size=config['fix_size'], spread=config['assemblies']['spread'],
                 distribution=config['distribution'])
 
