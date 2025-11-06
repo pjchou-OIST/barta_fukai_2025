@@ -17,7 +17,7 @@ if __name__ == '__main__':
     namespace = 'lognormal'
     # npat = 1800
     npat = 1000
-    system = 'hebb'
+    system = 'sfa_hebb'
 
     path_to_folder = data_path(namespace)
     filename = f"{path_to_folder}/{system}_spontaneous{npat}.h5"
@@ -63,6 +63,6 @@ if __name__ == '__main__':
 
         pattern_activations.append(act_trace)
 
-    os.makedirs('add-STD/plotting/data/assembly_traces', exist_ok=True)
-    np.savetxt('add-STD/plotting/data/assembly_traces/rates.csv', pattern_rates)
-    np.savetxt('add-STD/plotting/data/assembly_traces/activations.csv', pattern_activations)
+    os.makedirs('add-STD/plotting/sfa_data/assembly_traces', exist_ok=True)
+    np.savetxt('add-STD/plotting/sfa_data/assembly_traces/rates.csv', pattern_rates)
+    np.savetxt('add-STD/plotting/sfa_data/assembly_traces/activations.csv', pattern_activations)
