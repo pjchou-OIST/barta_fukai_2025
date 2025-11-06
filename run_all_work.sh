@@ -24,7 +24,7 @@ fi
 # ===================================================
 # --- Main parameters ---
 PATTERNS=1000
-SYSTEM_NAME="base_hebb" # 'hebb', 'rate', or 'hebb_smooth_rate'
+SYSTEM_NAME="mix_hebb" # 'hebb', 'rate', or 'hebb_smooth_rate'
 
 # --- log ---
 NETWORK_CONFIG="config/networks/segment_chain.yml"
