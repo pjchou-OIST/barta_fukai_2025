@@ -265,7 +265,7 @@ if __name__ == '__main__':
     folder_path = data_path(args.namespace)
 
     create_directory(folder_path)
-
+    
     output_filename = f'{folder_path}/init{args.patterns}.h5'
 
     # Write connectivity to HDF5 in COO form per block (EE, IE, II, EI)

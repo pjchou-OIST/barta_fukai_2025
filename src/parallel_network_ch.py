@@ -185,6 +185,7 @@ def run_network(
     output_file,
     simulation_time,
     learning_rate,
+    use_std,
     state_variables=None,
     stimuli=None,
     thresholds=None,
@@ -197,6 +198,8 @@ def run_network(
     plast_ii=False,
     inhf=None,
     shuffle=False,
+    U_SE_val: float = 0.07436,
+    tau_rec_std_ms: float = 800.0,
 ):
     """Simulate a spiking E/I network with optional plasticity and stimuli.
 
@@ -604,18 +607,28 @@ def run_network(
             w : 1
             alpha : 1
             '''
+        
+        logging.info(f"Settings: alpha1={alpha1}, use_std={use_std}")
+        if use_std:
+            logging.info(f"Enabling STD on E-E synapses with U_SE={U_SE_val}, tau_rec={tau_rec_std_ms}ms.")
+            # 這些 Python 變數 (U_SE, tau_rec_std) 會被 Brian2 的 local namespace 找到
+            U_SE = U_SE_val
+            tau_rec_std = tau_rec_std_ms * ms 
             
-        U_SE, tau_rec_std = 0.5, 800*ms # Standard STD parameters
-        ee_model = '''
-            w : 1
-            dx_std/dt = (1 - x_std) / tau_rec_std : 1 (clock-driven)
-            '''
-        ee_on_pre = '''
-            ge += w * x_std * nS
-            x_std -= U_SE * x_std
-            '''
-
-        See = Synapses(G_exc, G_exc, model=ee_model, on_pre=ee_on_pre, method='exponential_euler')
+            ee_model = '''
+                w : 1
+                dx_std/dt = (1 - x_std) / tau_rec_std : 1 (clock-driven)
+                '''
+            ee_on_pre = '''
+                ge += w * x_std * nS
+                x_std -= U_SE * x_std
+                '''
+            See = Synapses(G_exc, G_exc, model=ee_model, on_pre=ee_on_pre, method='exponential_euler')
+        
+        else:
+            # 使用您指定的 "turn off" (靜態) 突觸模型
+            logging.info("Using static E-E synapses (STD disabled).")
+            See = Synapses(G_exc, G_exc, model='w : 1', on_pre='ge += w*nS', method='exponential_euler')
         Sie = Synapses(G_exc, G_inh, model='w : 1', on_pre='ge += w*nS', method='exponential_euler')
         Sei = Synapses(G_inh, G_exc, model=model_ei, on_pre=pre_eqs_inh, on_post=post_eqs_inh, method='exponential_euler')
 
@@ -633,7 +646,9 @@ def run_network(
                     i=weights[label]['sources'].astype(int),
                     j=weights[label]['targets'].astype(int),
                 )
-
+                
+                if label == 'EE' and use_std:
+                    synapses[label].x_std = 1.0
                 if (label == 'EI') and (shuffle is True):
                     synapses[label].w = np.random.permutation(weights[label]['weights'])
                 else:

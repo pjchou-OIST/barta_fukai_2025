@@ -32,7 +32,7 @@ def data_path(namespace=None) -> str:
     
 def create_directory(folder_path):
     try:
-        os.mkdir(folder_path)
+        os.makedirs(folder_path)
         print(f"Created directory '{folder_path}'.")
     except FileExistsError:
         pass
