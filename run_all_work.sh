@@ -24,9 +24,10 @@ fi
 # ===================================================
 # --- Main parameters ---
 PATTERNS=1000
-SYSTEM_NAME="hebb" # 'hebb', 'rate', or 'hebb_smooth_rate'
+SYSTEM_NAME="base_hebb" # 'hebb', 'rate', or 'hebb_smooth_rate'
 
 # --- log ---
+NETWORK_CONFIG="config/networks/segment_chain.yml"
 SYSTEM_CONFIG="config/systems/${SYSTEM_NAME}.yml"
 TRAIN_RUN_CONFIG="config/runtypes/default_train.yml"
 SPONT_RUN_CONFIG="config/runtypes/spontaneous.yml"
@@ -96,7 +97,7 @@ if [ $START_STEP -le 1 ] && [ $END_STEP -ge 1 ]; then
         --job-name=step1_genconn \
         --output="${LOG_DIR}/step1_genconn_%j.out" \
         --error="${LOG_DIR}/step1_genconn_%j.err" \
-        slurm_scripts/run_genconn.sh $PATTERNS | awk '{print $4}')
+        slurm_scripts/run_genconn.sh $NETWORK_CONFIG $PATTERNS | awk '{print $4}')
     echo "Step 1 (genconn) submitted with Job ID: $JOB1_ID"
     # 設定給下一個步驟的依賴
     DEP_STRING="--dependency=afterok:$JOB1_ID"

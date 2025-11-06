@@ -16,8 +16,9 @@
 
 echo "Starting job on $(hostname) at $(date)"
 
-# 接收 $1 作為 patterns 參數
-echo "Running with patterns: $1"
-python src/genconn.py --patterns $1
+# 接收 $1 作為 config 參數，$2 作為 patterns 參數
+echo "Running with config: $1"
+echo "Running with patterns: $2"
+python src/genconn.py --config $1 --patterns $2
 
 echo "Job finished at $(date)"
