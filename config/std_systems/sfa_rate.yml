@@ -2,7 +2,7 @@ neuron :
   use_std : True
   U_SE_val : 0.37
   tau_rec_std_ms : 350.0
-  alpha1 : False
+  alpha1 : True
   alpha2 : 0.3
   reset_potential : True
   tau_stdp_ms : 20
@@ -12,4 +12,4 @@ background:
   background_poisson : 2
   poisson_amplitude : 0.3
 target_rate : 3
-name : rate
+name : sfa_rate
