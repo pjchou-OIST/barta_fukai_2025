@@ -26,7 +26,6 @@ builds/
 *.h5
 *.pkl
 *.zip
-*.sh
 run_parameters.txt
 
 # Ignore generated files

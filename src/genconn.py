@@ -20,7 +20,7 @@ from scipy.sparse import csr_array
 from utils import *
 
 
-def genconn(N, N_exc, P, f, sparsity, weights, circular=False, chain=False, segmented_chain=False, chain_length=10, rescale=True, fix_size=False, spread=0, seed=42, distribution='lognormal'):
+def genconn(N, N_exc, P, f, sparsity, weights, circular=False, chain=False, segmented_chain=False, segmented_circular=False, chain_length=10, rescale=True, fix_size=False, spread=0, seed=42, distribution='lognormal'):
     """Construct a dense weight matrix and embedded patterns.
 
     Generate connectivity by computing Hebbian co‑activations within E→E, then
@@ -129,7 +129,32 @@ def genconn(N, N_exc, P, f, sparsity, weights, circular=False, chain=False, segm
                     # Build bidirectional (symmetric) connections
                     Z0[x,y] += inter_pattern_strength 
                     Z0[y,x] += inter_pattern_strength
+    
+    elif segmented_circular:
+        print(f"Encoding symmetric *segmented circular* connections (chain length: {chain_length}) (base strength: {inter_pattern_strength})...")
+        if P % chain_length != 0:
+            print(f'Warning: Total number of patterns ({P}) is not divisible by chain_length ({chain_length}).')
         
+        num_segments = P // chain_length
+        
+        for seg_idx in tqdm(range(num_segments), total=num_segments, desc="Circular Segments"):
+            # Select patterns for this segment
+            start_idx = seg_idx * chain_length
+            end_idx = (seg_idx + 1) * chain_length
+            segment_patterns = patterns[start_idx:end_idx] # this is a slice of P[0]...P[9]
+
+            # Apply 'circular' logic on this slice
+            # (P[0],P[1]), (P[1],P[2]), ..., (P[8],P[9]), (P[9],P[0])
+            for pattern1, pattern2 in zip(segment_patterns, np.roll(segment_patterns, shift=-1, axis=0)):
+                neurons1 = np.argwhere(pattern1).flatten()
+                neurons2 = np.argwhere(pattern2).flatten()
+                pairs = np.array(list(product(neurons1, neurons2)))
+
+                if pairs.size > 0:
+                    x, y = pairs.T
+                    Z0[x,y] += inter_pattern_strength 
+                    Z0[y,x] += inter_pattern_strength
+                    
     elif chain:
         # P[t] <-> P[t+1] for t=0 to P-2
         for i in tqdm(range(P - 1), total=P-1):
@@ -292,16 +317,18 @@ if __name__ == '__main__':
 
     # Check coupling types
     segmented_chain_coupling = config.get('segmented_chain', False)  
+    segmented_circular_coupling = config.get('segmented_circular', False)
     chain_length = config.get('chain_length', 10)                     
     chain_coupling = config.get('chain', False)
     circular_coupling = config.get('circular', False)
 
-    if (segmented_chain_coupling + chain_coupling + circular_coupling) > 1:
-        print("Warning: Multiple coupling types enabled. Priority: segmented_chain > chain > circular.")
+    if (segmented_chain_coupling + segmented_circular_coupling + chain_coupling + circular_coupling) > 1:
+        print("Warning: Multiple coupling types enabled. Priority: segmented_chain > segmented_circular > chain > circular.")
         if segmented_chain_coupling:
+            segmented_circular_coupling = False
             chain_coupling = False
             circular_coupling = False
-        elif chain_coupling:
+        elif segmented_circular_coupling:
             chain_coupling = False
             circular_coupling = False
         elif chain_coupling:
@@ -310,7 +337,7 @@ if __name__ == '__main__':
     # Build connectivity and patterns (dense)
     Z, patterns = genconn(N=N, N_exc=N_exc, P=args.patterns, f=config['assemblies']['pattern_sparsity'],
                 sparsity=network_sparsity, circular=circular_coupling, chain=chain_coupling,
-                segmented_chain=segmented_chain_coupling, chain_length=chain_length, seed=args.seed,
+                segmented_chain=segmented_chain_coupling, segmented_circular=segmented_circular_coupling, chain_length=chain_length, seed=args.seed,
                 weights=config['weights'], fix_size=config['fix_size'], spread=config['assemblies']['spread'],
                 distribution=config['distribution'])
 
