@@ -15,6 +15,7 @@ __pycache__/
 # Ignore logs, debug outputs, hdf5 and pkl files
 logs/
 tmp/
+new/
 add-STD/
 output/
 builds/
