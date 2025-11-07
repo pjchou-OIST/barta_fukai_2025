@@ -18,8 +18,9 @@ echo "Starting job on $(hostname) at $(date)"
 
 # 接收 $1=patterns, $2=system, $3=run
 
-pixi run python analysis/fig1/calculate_firing_rates.py --system sfa_hebb
-pixi run python analysis/fig1/calculate_firing_rates.py --system sfa_rate
-pixi run python analysis/fig1/calculate_firing_rates.py --system sfa_hebb_smooth_rate
+# pixi run python analysis/fig1/weight_distributions.py --system hebb
+# pixi run python analysis/fig1/weight_distributions.py --system rate
+# pixi run python analysis/fig1/weight_distributions.py --system hebb_smooth_rate
+pixi run python analysis/fig2/traces.py 
 
 echo "Job finished at $(date)"
