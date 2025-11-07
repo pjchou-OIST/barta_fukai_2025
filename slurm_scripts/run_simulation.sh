@@ -17,7 +17,7 @@ echo "  System: $1"
 echo "  Run:    $2"
 echo "  Patterns: $3"
 export OMP_NUM_THREADS=$SLURM_CPUS_PER_TASK
-pixi run python src/simulation.py \
+pixi run python src/parallel_simulation.py \
   --system $1 \
   --run $2 \
   --patterns $3
