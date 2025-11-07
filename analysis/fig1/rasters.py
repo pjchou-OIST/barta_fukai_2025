@@ -35,11 +35,12 @@ def load_spikes(system, npat, start, end, namespace):
 
 
 if __name__ == '__main__':
+    output_dir = 'add-STD/plotting/prev_data/rasters/'
     namespace = 'lognormal'
-    for system in tqdm(['sfa_hebb', 'sfa_rate', 'sfa_hebb_smooth_rate']):
+    for system in tqdm(['hebb', 'rate', 'hebb_smooth_rate']):
     # for system in tqdm(['hebb', 'rate', 'hebb_smooth_rate']):
         spikes_exc, spikes_inh = load_spikes(system, 1000, 0, 20, namespace)
 
-        os.makedirs('add-STD/plotting/data/rasters', exist_ok=True)
-        np.savetxt(f'add-STD/plotting/data/rasters/{system}_excitatory.csv', spikes_exc)
-        np.savetxt(f'add-STD/plotting/data/rasters/{system}_inhibitory.csv', spikes_inh)
+        os.makedirs(f'{output_dir}', exist_ok=True)
+        np.savetxt(f'{output_dir}{system}_excitatory.csv', spikes_exc)
+        np.savetxt(f'{output_dir}{system}_inhibitory.csv', spikes_inh)

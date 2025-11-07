@@ -148,6 +148,27 @@ if __name__ == '__main__':
         ])
     except Exception:
         import pdb; pdb.set_trace()
+        
+    # --- 📍 MODIFICATION START 📍 ---
+    
+    output_csv_file = f"{folder_path}/{args.system}_{args.run}{args.patterns}_activations_events.csv"
+    logging.info(f"Saving human-readable events to {output_csv_file}. {memory_usage()}")
+
+    # `activations_sparse` 是 (3, N)
+    # 為了方便 CSV 閱讀，我們將它轉置 (Transpose) 為 (N, 3)
+    events_for_csv = activations_sparse.T
+
+    # 儲存為 CSV，並加上標頭 (header)
+    np.savetxt(
+        output_csv_file,
+        events_for_csv,
+        delimiter=",",
+        header="act_time,duration,pattern_ix",
+        fmt='%d',       # 所有值都是整數
+        comments=""     # 讓 header 沒有 '#' 符號
+    )
+    
+    # --- MODIFICATION END ---
 
     output_file = f"{folder_path}/{args.system}_{args.run}{args.patterns}_activations.h5"
 

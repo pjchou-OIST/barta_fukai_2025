@@ -17,7 +17,7 @@ if __name__ == '__main__':
     namespace = 'lognormal'
     # npat = 1800
     npat = 1000
-    system = 'sfa_hebb'
+    system = 'hebb'
 
     path_to_folder = data_path(namespace)
     filename = f"{path_to_folder}/{system}_spontaneous{npat}.h5"
@@ -47,6 +47,7 @@ if __name__ == '__main__':
     mask = (act_times > 5) & (act_times < 10)
 
     pattern_ix_list = np.unique(pattern_ixs[mask])
+    print(pattern_ix_list)
 
     pattern_rates = []
     pattern_activations = []
