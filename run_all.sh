@@ -24,11 +24,11 @@ fi
 # ===================================================
 # --- Main parameters ---
 PATTERNS=1000
-SYSTEM_NAME="sfa_hebb_smooth_rate" # 'hebb', 'rate', or 'hebb_smooth_rate'
+SYSTEM_NAME="hebb" # 'hebb', 'rate', or 'hebb_smooth_rate'
 
 # --- log ---
 SYSTEM_CONFIG="config/std_systems/${SYSTEM_NAME}.yml"
-TRAIN_RUN_CONFIG="config/runtypes/default_train_long.yml" # changed to long(5000s) for std only
+TRAIN_RUN_CONFIG="config/runtypes/default_train.yml" # changed to long(5000s) for std only
 SPONT_RUN_CONFIG="config/runtypes/spontaneous.yml"
 COND_RUN_CONFIG="config/runtypes/conductances.yml"
 PERT_RUN_CONFIG="config/runtypes/perturbation.yml"
@@ -45,7 +45,7 @@ GSTATS_NAMESPACE="lognormal"
 #                 LOGGING SETUP
 # ===================================================
 RUN_TIMESTAMP=$(date +%Y-%m-%d_%H%M%S)
-LOG_DIR="slurm_std_logs/run_${RUN_TIMESTAMP}_steps_${START_STEP}-${END_STEP}"
+LOG_DIR="slurm_addstd_logs/run_${RUN_TIMESTAMP}_steps_${START_STEP}-${END_STEP}"
 mkdir -p $LOG_DIR
 
 # --- *** Save Parameters to Log File *** ---

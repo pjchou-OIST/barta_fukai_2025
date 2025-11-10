@@ -18,7 +18,6 @@ tmp/
 new/
 add-STD/
 output/
-builds/
 chain/
 *.log
 *.out
