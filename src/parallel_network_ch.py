@@ -329,9 +329,10 @@ def run_network(
     logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s")
     # ==================================
     base_name = os.path.basename(output_file)
+    output_dir = os.path.dirname(output_file)
     cwd = os.getcwd() 
     build_dir_name = os.path.splitext(base_name)[0] + "_build"
-    build_path = os.path.join(cwd, "builds", build_dir_name)
+    build_path = os.path.join(cwd, f"{output_dir}/builds/{build_dir_name}")
     logging.info(f"Ensuring clean build: Deleting '{build_path}' if it exists...")
     shutil.rmtree(build_path, ignore_errors=True)
     set_device('cpp_standalone', directory=build_path)
