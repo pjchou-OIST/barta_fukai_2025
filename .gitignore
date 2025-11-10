@@ -17,6 +17,7 @@ logs/
 tmp/
 new/
 add-STD/
+builds/
 output/
 chain/
 *.log
