@@ -24,7 +24,7 @@ fi
 # ===================================================
 # --- Main parameters ---
 PATTERNS=1000
-SYSTEM_NAME="hebb" # 'hebb', 'rate', or 'hebb_smooth_rate'
+SYSTEM_NAME="sfa_hebb_smooth_rate" # 'hebb', 'rate', or 'hebb_smooth_rate'
 
 # --- log ---
 SYSTEM_CONFIG="config/std_systems/${SYSTEM_NAME}.yml"
