@@ -1,0 +1,8 @@
+run:
+  learning_rate : 1.e-3
+  simulation_time : 6000
+  state_variables : null
+  save_weights : True
+init_matrix : init
+stimulus : null
+name : train
