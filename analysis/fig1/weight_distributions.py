@@ -40,7 +40,7 @@ if __name__ == '__main__':
     Wee = W[:8000,:8000]
     totexcit = Wee.sum(axis=1)
 
-    output_dir = 'add-STD/plotting/prev_data/'
+    output_dir = 'SFA-STD/plotting/data/'
     os.makedirs(f'{output_dir}ei_weights', exist_ok=True)
     os.makedirs(f'{output_dir}tot_inhib', exist_ok=True)
     os.makedirs(f'{output_dir}tot_excit', exist_ok=True)

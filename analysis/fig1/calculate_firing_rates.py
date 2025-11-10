@@ -28,7 +28,7 @@ if __name__ == '__main__':
     args = parser.parse_args()
 
     logger.info(f"Arguments received: system={args.system}, npat={args.npat}")
-    output_dir = 'add-STD/plotting/prev_data/firing_rates/'
+    output_dir = 'SFA-STD/plotting/data/firing_rates/'
 
     fr = get_firing_rates(args.system, args.npat, namespace=args.namespace)
     os.makedirs(f'{output_dir}', exist_ok=True)

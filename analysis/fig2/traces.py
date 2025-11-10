@@ -15,9 +15,10 @@ from analysis import get_spike_counts
 
 if __name__ == '__main__':
     namespace = 'lognormal'
-    # npat = 1800
+    # npat = 1800 # original
     npat = 1000
-    system = 'hebb'
+    system = 'hebb_smooth_rate'
+    output_dir = 'old-STD/plotting/data/assembly_traces_hebb_smooth_rate/'
 
     path_to_folder = data_path(namespace)
     filename = f"{path_to_folder}/{system}_spontaneous{npat}.h5"
@@ -52,7 +53,8 @@ if __name__ == '__main__':
     pattern_rates = []
     pattern_activations = []
 
-    for i, patix in enumerate(pattern_ixs[mask]):
+    for i, patix in enumerate(pattern_ix_list):
+        print(i, patix)
         pattern = patterns[int(patix)]
 
         pattern_rates.append((sc[pattern]).mean(axis=0)[:500]*100)
@@ -62,8 +64,9 @@ if __name__ == '__main__':
         for i in range(10):
             act_trace[i::10] = (sc[patterns[int(patix)]][:,i:500+i].reshape(len(pattern), 50, 10).sum(axis=2) > 0).mean(axis=0)
 
+        print(act_trace)
         pattern_activations.append(act_trace)
 
-    os.makedirs('add-STD/plotting/sfa_data/assembly_traces', exist_ok=True)
-    np.savetxt('add-STD/plotting/sfa_data/assembly_traces/rates.csv', pattern_rates)
-    np.savetxt('add-STD/plotting/sfa_data/assembly_traces/activations.csv', pattern_activations)
+    os.makedirs(output_dir, exist_ok=True)
+    np.savetxt(f'{output_dir}rates.csv', pattern_rates)
+    np.savetxt(f'{output_dir}activations.csv', pattern_activations)
