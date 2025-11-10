@@ -24,12 +24,12 @@ fi
 # ===================================================
 # --- Main parameters ---
 PATTERNS=1000
-SYSTEM_NAME="sfa_hebb" # 'hebb', 'rate', or 'hebb_smooth_rate'
+SYSTEM_NAME="long_mix_hebb" # 'hebb', 'rate', or 'hebb_smooth_rate'
 
 # --- log ---
 NETWORK_CONFIG="config/networks/segment_chain.yml"
 SYSTEM_CONFIG="config/systems/${SYSTEM_NAME}.yml"
-TRAIN_RUN_CONFIG="config/runtypes/default_train.yml"
+TRAIN_RUN_CONFIG="config/runtypes/default_train_long.yml" # for default_train_long.yml elongated to 6000 s
 SPONT_RUN_CONFIG="config/runtypes/spontaneous.yml"
 COND_RUN_CONFIG="config/runtypes/conductances.yml"
 PERT_RUN_CONFIG="config/runtypes/perturbation.yml"
