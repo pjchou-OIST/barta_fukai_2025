@@ -17,8 +17,8 @@ if __name__ == '__main__':
     namespace = 'lognormal'
     # npat = 1800 # original
     npat = 1000
-    system = 'hebb_smooth_rate'
-    output_dir = 'old-STD/plotting/data/assembly_traces_hebb_smooth_rate/'
+    system = 'hebb'
+    output_dir = 'dist-STD/plotting/data/assembly_traces_hebb/'
 
     path_to_folder = data_path(namespace)
     filename = f"{path_to_folder}/{system}_spontaneous{npat}.h5"

@@ -35,11 +35,11 @@ def load_spikes(system, npat, start, end, namespace):
 
 
 if __name__ == '__main__':
-    output_dir = 'SFA-STD/plotting/data/rasters/'
+    output_dir = 'dist-STD/plotting/data/rasters/'
     namespace = 'lognormal'
     # for system in tqdm(['hebb', 'rate']):
     # for system in tqdm(['hebb', 'rate', 'hebb_smooth_rate']):
-    for system in tqdm(['sfa_hebb', 'sfa_rate', 'sfa_hebb_smooth_rate']):
+    for system in tqdm(['hebb', 'rate', 'hebb_smooth_rate', 'sfa_hebb', 'sfa_rate', 'sfa_hebb_smooth_rate']):
         spikes_exc, spikes_inh = load_spikes(system, 1000, 0, 20, namespace)
 
         os.makedirs(f'{output_dir}', exist_ok=True)

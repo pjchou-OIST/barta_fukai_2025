@@ -24,7 +24,7 @@ fi
 # ===================================================
 # --- Main parameters ---
 PATTERNS=1000
-SYSTEM_NAME="sfa_rate" # 'hebb', 'rate', or 'hebb_smooth_rate'
+SYSTEM_NAME="sfa_hebb_smooth_rate" # 'hebb', 'rate', or 'hebb_smooth_rate'
 
 # --- log ---
 SYSTEM_CONFIG="config/std_systems/${SYSTEM_NAME}.yml"
@@ -45,7 +45,7 @@ GSTATS_NAMESPACE="lognormal"
 #                 LOGGING SETUP
 # ===================================================
 RUN_TIMESTAMP=$(date +%Y-%m-%d_%H%M%S)
-LOG_DIR="slurm_longstd_logs/run_${RUN_TIMESTAMP}_steps_${START_STEP}-${END_STEP}"
+LOG_DIR="slurm_diststd_logs/run_${RUN_TIMESTAMP}_steps_${START_STEP}-${END_STEP}"
 mkdir -p $LOG_DIR
 
 # --- *** Save Parameters to Log File *** ---

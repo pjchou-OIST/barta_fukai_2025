@@ -5,7 +5,7 @@
 #SBATCH -c 5
 #SBATCH -C xeon
 #SBATCH --open-mode=append
-#SBATCH --job-name=hebb_activations
+#SBATCH --job-name=run_python
 
 #SBATCH --nodes=1
 #SBATCH --ntasks=1
@@ -18,9 +18,15 @@ echo "Starting job on $(hostname) at $(date)"
 
 # 接收 $1=patterns, $2=system, $3=run
 
+# pixi run python analysis/fig1/weight_distributions.py --system hebb
+# pixi run python analysis/fig1/weight_distributions.py --system rate
+# pixi run python analysis/fig1/weight_distributions.py --system hebb_smooth_rate
 # pixi run python analysis/fig1/weight_distributions.py --system sfa_hebb
 # pixi run python analysis/fig1/weight_distributions.py --system sfa_rate
 # pixi run python analysis/fig1/weight_distributions.py --system sfa_hebb_smooth_rate
-pixi run python analysis/fig2/traces.py
+
+# pixi run python analysis/fig1/weight_distributions.py --system sfa_hebb_smooth_rate
+# pixi run python analysis/fig2/traces.py
+pixi run python analysis/sync/check.py
 
 echo "Job finished at $(date)"

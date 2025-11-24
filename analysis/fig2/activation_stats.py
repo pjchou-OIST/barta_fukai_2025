@@ -57,7 +57,7 @@ if __name__ == '__main__':
     entropies = {}
 
     new_xx = np.linspace(0, measure_time, 201)
-    output_dir = 'SFA-STD/plotting/data/'
+    output_dir = 'dist-STD/plotting/data/'
     os.makedirs(output_dir, exist_ok=True)
 
     for npat in [1000]:
@@ -66,7 +66,7 @@ if __name__ == '__main__':
 
         # for system in ['hebb', 'rate']:
         # for system in ['hebb', 'hebb_smooth_rate', 'rate']:
-        for system in ['sfa_hebb', 'sfa_hebb_smooth_rate', 'sfa_rate']:
+        for system in ['hebb', 'rate', 'hebb_smooth_rate', 'sfa_hebb', 'sfa_hebb_smooth_rate', 'sfa_rate']:
             if system == 'shuffle':
                 run = 'spontaneous_shuffle'
                 act_times, durations, pattern_ixs = load_activation('hebb', npat, run, namespace=namespace)

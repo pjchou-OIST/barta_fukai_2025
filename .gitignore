@@ -16,7 +16,7 @@ __pycache__/
 logs/
 tmp/
 new/
-add-STD/
+dist-STD/
 output/
 chain/
 *.log
