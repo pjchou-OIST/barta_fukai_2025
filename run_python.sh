@@ -27,6 +27,6 @@ echo "Starting job on $(hostname) at $(date)"
 
 # pixi run python analysis/fig1/weight_distributions.py --system sfa_hebb_smooth_rate
 # pixi run python analysis/fig2/traces.py
-pixi run python analysis/sync/check.py
+pixi run python analysis/sync/analyze_micro_stats.py
 
 echo "Job finished at $(date)"

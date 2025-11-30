@@ -200,7 +200,8 @@ def run_network(
     shuffle=False,
     U_SE_mean: float = 0.07436, # Changed from U_SE_val, now represents the MEAN
     U_SE_std: float = 0.0,     # Added standard deviation for U_SE
-    tau_rec_std_ms: float = 800.0, # This is now the MEAN tau_rec in ms
+    tau_rec_mu: float = 6.5,    # 取代原本的 tau_rec_std_ms
+    tau_rec_sigma: float = 0.7, # This is now the MEAN tau_rec in ms
 ):
     """Simulate a spiking E/I network with optional plasticity and stimuli.
 
@@ -292,10 +293,13 @@ def run_network(
         Mean value for the E→E synaptic depression factor (U_SE).
     U_SE_std : float, default 0.0
         Standard deviation for the E→E synaptic depression factor (U_SE).
-    tau_rec_std_ms : float, default 800.0
-        Mean value (in ms) for the E→E synaptic recovery time constant (tau_rec).
-        The SD is set to 20% of this mean, and values are clipped to [100, 500] ms.
-    
+    # --- 修改開始 ---
+    tau_rec_mu : float, default 6.5
+        Log-normal distribution parameter mu (mean of log values) for E→E recovery time constant.
+        The values generated will be treated as milliseconds.
+    tau_rec_sigma : float, default 0.7
+        Log-normal distribution parameter sigma (std of log values) for E→E recovery time constant.
+    # --- 修改結束 ---
     Returns
     -------
     None
@@ -345,7 +349,7 @@ def run_network(
     logging.info(f"Ensuring clean build: Deleting '{build_path}' if it exists...")
     shutil.rmtree(build_path, ignore_errors=True)
     set_device('cpp_standalone', directory=build_path)
-    prefs.devices.cpp_standalone.openmp_threads = 15
+    prefs.devices.cpp_standalone.openmp_threads = 25
     logging.info(f"Using unique build directory: {build_path}")
     # ==================================
 
@@ -620,7 +624,7 @@ def run_network(
         
         logging.info(f"Settings: alpha1={alpha1}, use_std={use_std}")
         if use_std:
-            logging.info(f"Enabling STD on E-E synapses with distributed parameters.")
+            logging.info(f"Enabling STD on E-E synapses with Log-Normal distributed parameters (mu={tau_rec_mu}, sigma={tau_rec_sigma}).")
             # Parameters U_SE and tau_rec_std are now per-synapse (constant)
             # They will be initialized with distributions during the connection phase
             ee_model = '''
@@ -670,15 +674,13 @@ def run_network(
                     U_SE_values = np.random.normal(U_SE_mean, U_SE_std, n_ee_synapses)
                     synapses[label].U_SE = np.clip(U_SE_values, 0, 1)
 
-                    # Set distributed tau_rec from normal distribution
-                    # Mean = tau_rec_std_ms, CV = 20%, Clip = [100, 500] ms
-                    tau_mean_ms = tau_rec_std_ms
-                    tau_std_ms = tau_mean_ms * 0.20
-                    tau_rec_values_ms = np.random.normal(tau_mean_ms, tau_std_ms, n_ee_synapses)
-                    tau_rec_values_ms_clipped = np.clip(tau_rec_values_ms, 100, 500)
-                    
-                    # Assign to synapse, converting from ms to Brian2's time unit
+                    # --- 修改開始 ---
+                    # Set distributed tau_rec from LOG-NORMAL distribution
+                    # Using mu and sigma as derived from biological data (e.g. mu=6.5, sigma=0.7)
+                    tau_rec_values_ms = np.random.lognormal(mean=tau_rec_mu, sigma=tau_rec_sigma, size=n_ee_synapses)
+                    tau_rec_values_ms_clipped = np.clip(tau_rec_values_ms, 5.0, 10000.0)
                     synapses[label].tau_rec_std = tau_rec_values_ms_clipped * ms
+                    # --- 修改結束 ---
 
                     # Also set weights (which would have been handled by 'else' block)
                     synapses[label].w = weights[label]['weights']

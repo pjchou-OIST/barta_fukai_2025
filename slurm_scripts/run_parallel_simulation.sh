@@ -7,7 +7,7 @@
 #SBATCH --job-name=hebb_simulation
 #SBATCH --nodes=1
 #SBATCH --ntasks=1
-#SBATCH --cpus-per-task=15
+#SBATCH --cpus-per-task=30
 
 echo "Starting job on $(hostname) at $(date)"
 
