@@ -30,13 +30,13 @@ SYSTEM_NAME="mix_hebb" # 'hebb', 'rate', or 'hebb_smooth_rate'
 NETWORK_CONFIG="config/networks/segment_circular.yml"
 SYSTEM_CONFIG="config/systems/${SYSTEM_NAME}.yml"
 TRAIN_RUN_CONFIG="config/runtypes/default_train.yml"
-SPONT_RUN_CONFIG="config/runtypes/spontaneous.yml"
+SPONT_RUN_CONFIG="config/runtypes/spontaneous_short_inhf.yml"
 COND_RUN_CONFIG="config/runtypes/conductances.yml"
 PERT_RUN_CONFIG="config/runtypes/perturbation.yml"
 
 # --- Step-Specific Parameters ---
 # Step 4 (Activations)
-ACT_RUN_NAME="spontaneous" 
+ACT_RUN_NAME="spontaneous_short_inhf" 
 # Step 6 (GStats)
 GSTATS_NAME="${SYSTEM_NAME}_conductances"
 GSTATS_NAMESPACE="lognormal"
@@ -45,7 +45,7 @@ GSTATS_NAMESPACE="lognormal"
 #                 LOGGING SETUP
 # ===================================================
 RUN_TIMESTAMP=$(date +%Y-%m-%d_%H%M%S)
-LOG_DIR="slurm_logs/run_${RUN_TIMESTAMP}_steps_${START_STEP}-${END_STEP}"
+LOG_DIR="slurm_seg_circular_logs/run_${RUN_TIMESTAMP}_steps_${START_STEP}-${END_STEP}"
 mkdir -p $LOG_DIR
 
 # --- *** Save Parameters to Log File *** ---

@@ -1,18 +1,18 @@
 #!/bin/bash
 #SBATCH -p compute
 #SBATCH -t 72:00:00
-#SBATCH --mem=250G
+#SBATCH --mem=500G
 #SBATCH -C xeon
 #SBATCH --open-mode=append
 #SBATCH --job-name=hebb_simulation
 #SBATCH --nodes=1
 #SBATCH --ntasks=1
-#SBATCH --cpus-per-task=32
+#SBATCH --cpus-per-task=40
 
 echo "Starting job on $(hostname) at $(date)"
 
 # 接收 $1=system, $2=run, $3=patterns
-echo "Running simulation with:"
+echo "Running parallel simulation with:"
 echo "  System: $1"
 echo "  Run:    $2"
 echo "  Patterns: $3"

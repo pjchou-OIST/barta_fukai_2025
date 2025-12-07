@@ -198,8 +198,9 @@ def run_network(
     plast_ii=False,
     inhf=None,
     shuffle=False,
-    U_SE_val: float = 0.07436,
-    tau_rec_std_ms: float = 800.0,
+    U_SE_mean: float = 0.07436, # Changed from U_SE_val, now represents the MEAN
+    U_SE_std: float = 0.0,     # Added standard deviation for U_SE
+    tau_rec_std_ms: float = 800.0, # This is now the MEAN tau_rec in ms
 ):
     """Simulate a spiking E/I network with optional plasticity and stimuli.
 
@@ -287,7 +288,14 @@ def run_network(
         (``inhf`` field in equations). If None, set to 1.
     shuffle : bool, default False
         If True, shuffle EI weight vector before simulation (diagnostics).
-
+    U_SE_mean : float, default 0.07436
+        Mean value for the E→E synaptic depression factor (U_SE).
+    U_SE_std : float, default 0.0
+        Standard deviation for the E→E synaptic depression factor (U_SE).
+    tau_rec_std_ms : float, default 800.0
+        Mean value (in ms) for the E→E synaptic recovery time constant (tau_rec).
+        The SD is set to 20% of this mean, and values are clipped to [100, 500] ms.
+    
     Returns
     -------
     None
@@ -328,14 +336,16 @@ def run_network(
 
     logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s")
     # ==================================
+    logging.info(f"--- Running network with parameters --- \n{locals()}\n" + "-"*40)
     base_name = os.path.basename(output_file)
+    output_dir = os.path.dirname(output_file)
     cwd = os.getcwd() 
     build_dir_name = os.path.splitext(base_name)[0] + "_build"
-    build_path = os.path.join(cwd, "builds", build_dir_name)
+    build_path = os.path.join(cwd, f"{output_dir}/builds/{build_dir_name}")
     logging.info(f"Ensuring clean build: Deleting '{build_path}' if it exists...")
     shutil.rmtree(build_path, ignore_errors=True)
     set_device('cpp_standalone', directory=build_path)
-    prefs.devices.cpp_standalone.openmp_threads = 8 
+    prefs.devices.cpp_standalone.openmp_threads = 32
     logging.info(f"Using unique build directory: {build_path}")
     # ==================================
 
@@ -610,13 +620,13 @@ def run_network(
         
         logging.info(f"Settings: alpha1={alpha1}, use_std={use_std}")
         if use_std:
-            logging.info(f"Enabling STD on E-E synapses with U_SE={U_SE_val}, tau_rec={tau_rec_std_ms}ms.")
-            # 這些 Python 變數 (U_SE, tau_rec_std) 會被 Brian2 的 local namespace 找到
-            U_SE = U_SE_val
-            tau_rec_std = tau_rec_std_ms * ms 
-            
+            logging.info(f"Enabling STD on E-E synapses with distributed parameters.")
+            # Parameters U_SE and tau_rec_std are now per-synapse (constant)
+            # They will be initialized with distributions during the connection phase
             ee_model = '''
                 w : 1
+                U_SE : 1 (constant)
+                tau_rec_std : second (constant)
                 dx_std/dt = (1 - x_std) / tau_rec_std : 1 (clock-driven)
                 '''
             ee_on_pre = '''
@@ -629,6 +639,7 @@ def run_network(
             # 使用您指定的 "turn off" (靜態) 突觸模型
             logging.info("Using static E-E synapses (STD disabled).")
             See = Synapses(G_exc, G_exc, model='w : 1', on_pre='ge += w*nS', method='exponential_euler')
+        
         Sie = Synapses(G_exc, G_inh, model='w : 1', on_pre='ge += w*nS', method='exponential_euler')
         Sei = Synapses(G_inh, G_exc, model=model_ei, on_pre=pre_eqs_inh, on_post=post_eqs_inh, method='exponential_euler')
 
@@ -648,10 +659,34 @@ def run_network(
                 )
                 
                 if label == 'EE' and use_std:
+                    # Set initial state
                     synapses[label].x_std = 1.0
-                if (label == 'EI') and (shuffle is True):
+
+                    # Get number of synapses to initialize
+                    n_ee_synapses = len(weights[label]['sources'])
+
+                    # Set distributed U_SE from normal distribution (mean, std)
+                    # Clipped to [0, 1] as it's a probability
+                    U_SE_values = np.random.normal(U_SE_mean, U_SE_std, n_ee_synapses)
+                    synapses[label].U_SE = np.clip(U_SE_values, 0, 1)
+
+                    # Set distributed tau_rec from normal distribution
+                    # Mean = tau_rec_std_ms, CV = 20%, Clip = [100, 500] ms
+                    tau_mean_ms = tau_rec_std_ms
+                    tau_std_ms = tau_mean_ms * 0.20
+                    tau_rec_values_ms = np.random.normal(tau_mean_ms, tau_std_ms, n_ee_synapses)
+                    tau_rec_values_ms_clipped = np.clip(tau_rec_values_ms, 100, 500)
+                    
+                    # Assign to synapse, converting from ms to Brian2's time unit
+                    synapses[label].tau_rec_std = tau_rec_values_ms_clipped * ms
+
+                    # Also set weights (which would have been handled by 'else' block)
+                    synapses[label].w = weights[label]['weights']
+
+                elif (label == 'EI') and (shuffle is True):
                     synapses[label].w = np.random.permutation(weights[label]['weights'])
                 else:
+                    # Handles 'IE', 'II', 'EI' (no shuffle), and 'EE' (if use_std=False)
                     synapses[label].w = weights[label]['weights']
                 
                 synapses[label].delay = delays[label] * ms

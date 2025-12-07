@@ -1,0 +1,36 @@
+#!/bin/bash
+#SBATCH -p short
+#SBATCH -t 0:30:00
+#SBATCH --mem=250G
+#SBATCH -c 5
+#SBATCH -C xeon
+#SBATCH --open-mode=append
+#SBATCH --job-name=run_python
+
+#SBATCH --nodes=1
+#SBATCH --ntasks=1
+#SBATCH --cpus-per-task=32  # 雖然是 short job，但保持一致
+
+#SBATCH --output=hebb_output_%j.log
+#SBATCH --error=hebb_error_%j.log
+
+echo "Starting job on $(hostname) at $(date)"
+
+# 接收 $1=patterns, $2=system, $3=run
+
+# pixi run python analysis/fig1/weight_distributions.py --system hebb
+# pixi run python analysis/fig1/weight_distributions.py --system rate
+# pixi run python analysis/fig1/weight_distributions.py --system hebb_smooth_rate
+# pixi run python analysis/fig1/weight_distributions.py --system sfa_hebb
+# pixi run python analysis/fig1/weight_distributions.py --system sfa_rate
+# pixi run python analysis/fig1/weight_distributions.py --system sfa_hebb_smooth_rate
+
+# pixi run python analysis/fig1/weight_distributions.py --system sfa_hebb_smooth_rate
+# pixi run python analysis/fig2/traces.py
+# pixi run python analysis/sync/analyze_micro_stats.py
+# pixi run python check/sync/pattern_stats.py
+# pixi run python analysis/seg/raw.py
+# pixi run python analysis/seg/raw_base.py
+pixi run python analysis/seg/fig3.py
+
+echo "Job finished at $(date)"

@@ -17,6 +17,10 @@ logs/
 tmp/
 add-STD/
 chain/
+poster_plots/
+seg_previous/
+dist-seg-circular/
+base/
 output/
 builds/
 *.log
