@@ -349,7 +349,7 @@ def run_network(
     logging.info(f"Ensuring clean build: Deleting '{build_path}' if it exists...")
     shutil.rmtree(build_path, ignore_errors=True)
     set_device('cpp_standalone', directory=build_path)
-    prefs.devices.cpp_standalone.openmp_threads = 25
+    prefs.devices.cpp_standalone.openmp_threads = 32
     logging.info(f"Using unique build directory: {build_path}")
     # ==================================
 

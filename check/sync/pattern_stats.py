@@ -4,9 +4,10 @@ import matplotlib.pyplot as plt
 import seaborn as sns
 import sys
 import os
+import argparse
 from tqdm import tqdm
 
-# --- 1. Path Setup (Same as rasters.py) ---
+# --- 1. Path Setup ---
 current_dir = os.path.dirname(os.path.abspath(__file__)) 
 src_dir = os.path.dirname(current_dir)                   
 parent_dir = os.path.dirname(src_dir)                  
@@ -15,14 +16,13 @@ utils_path = os.path.join(parent_dir, 'src/')
 sys.path.append(utils_path)
 from utils import data_path
 
-# --- 2. Logic to load activations ---
-def load_activations(system, npat, run_name, namespace):
+# --- 2. Logic to load activations (With Time Slicing) ---
+def load_activations(system, npat, run_name, namespace, start_time=0, duration=None):
     """
-    Load activation traces from the output of get_activations.py
-    Target file: {system}_{run_name}{npat}_activations.h5
+    Load activation traces and filter by time window.
+    Assumes time resolution (dt) is 10ms (0.01s).
     """
     folder = data_path(namespace)
-    # 組合檔名，對應 get_activations.py 的輸出格式
     filename = f"{folder}/{system}_{run_name}{npat}_activations.h5"
 
     if not os.path.exists(filename):
@@ -31,34 +31,68 @@ def load_activations(system, npat, run_name, namespace):
 
     with h5py.File(filename, "r") as h5f:
         # traces shape: (n_patterns, n_time_steps)
-        traces = h5f['traces'][:] 
-        # sparse events: [times, durations, pattern_ixs]
-        # 注意：有些版本的 get_activations 可能存成 'activations' dataset
+        # Load all first, then slice (to avoid complex HDF5 slicing if possible)
+        traces_all = h5f['traces'][:] 
+        
         if 'activations' in h5f:
-            sparse_events = h5f['activations'][:]
+            sparse_events_all = h5f['activations'][:]
         else:
-            sparse_events = None
-            
+            sparse_events_all = None
+
+    # --- Time Slicing Logic ---
+    dt = 0.01 # 10ms resolution
+    total_steps = traces_all.shape[1]
+    
+    # Calculate indices
+    start_idx = int(start_time / dt)
+    
+    if duration is not None:
+        end_idx = int((start_time + duration) / dt)
+        end_idx = min(end_idx, total_steps)
+    else:
+        end_idx = total_steps
+
+    # Check bounds
+    if start_idx >= total_steps:
+        print(f"Error: Start time {start_time}s is beyond simulation length.")
+        return None, None
+
+    # Slice Traces
+    traces = traces_all[:, start_idx:end_idx]
+
+    # Filter Sparse Events
+    # sparse_events structure: [0]=time_index, [1]=duration_steps, [2]=pattern_ix
+    sparse_events = None
+    if sparse_events_all is not None:
+        event_times = sparse_events_all[0]
+        # Keep events that start within the window
+        mask = (event_times >= start_idx) & (event_times < end_idx)
+        sparse_events = sparse_events_all[:, mask]
+
     return traces, sparse_events
 
 # --- 3. Analysis & Plotting Function ---
-def diagnose_and_save(traces, sparse_events, system, output_dir):
+def diagnose_and_save(traces, sparse_events, system, output_dir, time_info_str):
     """
     Perform health check metrics and save plot to output_dir
     """
     # Metric A: Co-activation (Synchrony)
-    # 判定 pattern 活化的閾值，這裡設為 0.5 (假設 trace 是 normalized fraction)
     active_binary = (traces > 0.5).astype(int)
     co_activation_counts = np.sum(active_binary, axis=0)
-    max_sync = np.max(co_activation_counts)
-    mean_sync = np.mean(co_activation_counts)
+    
+    if co_activation_counts.size == 0:
+        max_sync = 0
+        mean_sync = 0
+    else:
+        max_sync = np.max(co_activation_counts)
+        mean_sync = np.mean(co_activation_counts)
     
     # Metric B: Correlation (Independence)
-    # 只取前 500 個 pattern 算相關性矩陣以節省時間
     n_sample = min(traces.shape[0], 500)
-    if n_sample > 1:
+    if n_sample > 1 and traces.shape[1] > 1:
         corr_matrix = np.corrcoef(traces[:n_sample])
-        # 取上三角矩陣平均 (不含對角線)
+        # Handle NaN if constant activity
+        corr_matrix = np.nan_to_num(corr_matrix)
         avg_corr = np.mean(corr_matrix[np.triu_indices(n_sample, k=1)])
     else:
         avg_corr = 0
@@ -66,7 +100,6 @@ def diagnose_and_save(traces, sparse_events, system, output_dir):
 
     # Metric C: Duration (Replay Quality)
     if sparse_events is not None and sparse_events.shape[1] > 0:
-        # 假設 get_activations 用 10 phase sharding, 每個 bin 代表 10ms
         durations_ms = sparse_events[1] * 10 
         avg_dur = np.mean(durations_ms)
     else:
@@ -75,12 +108,10 @@ def diagnose_and_save(traces, sparse_events, system, output_dir):
 
     # --- Plotting ---
     fig, axes = plt.subplots(1, 3, figsize=(18, 5))
-    fig.suptitle(f"Network Health Check: {system}", fontsize=16)
+    fig.suptitle(f"Network Health Check: {system}\n({time_info_str})", fontsize=14)
     
     # Plot 1: Co-activation (Log Scale)
-    # sns.histplot(co_activation_counts, bins=30, ax=axes[0], kde=False, log_scale=(False, True))
     sns.histplot(co_activation_counts, binwidth=5, ax=axes[0], kde=False, log_scale=(False, True))
-    print(co_activation_counts)
     axes[0].set_xlim(0, 150)
     axes[0].set_title(f"Co-activation (Sync)\nMax: {max_sync} patterns")
     axes[0].set_xlabel("# Simultaneous Active Patterns")
@@ -104,7 +135,7 @@ def diagnose_and_save(traces, sparse_events, system, output_dir):
     # Save figure
     save_path = os.path.join(output_dir, f"{system}_health_check.png")
     plt.savefig(save_path)
-    plt.close(fig) # Close to free memory
+    plt.close(fig) 
     
     return {
         "max_sync": max_sync,
@@ -113,43 +144,61 @@ def diagnose_and_save(traces, sparse_events, system, output_dir):
     }
 
 if __name__ == '__main__':
+    # --- Arguments ---
+    parser = argparse.ArgumentParser(description="Analyze pattern synchrony and health.")
+    parser.add_argument('--start', type=float, default=10.0, help="Start time for analysis (seconds)")
+    parser.add_argument('--duration', type=float, default=None, help="Duration to analyze (seconds). If None, analyze until end.")
+    parser.add_argument('--namespace', type=str, default='lognormal', help="Data folder namespace")
+    parser.add_argument('--run_name', type=str, default='spontaneous', help="Run name suffix (e.g. spontaneous)")
+    parser.add_argument('--npat', type=int, default=1000, help="Number of patterns")
+    
+    args = parser.parse_args()
+
     # --- Configuration ---
-    # 設定要輸出的資料夾，類似 rasters.py 的 output_dir
-    output_dir = 'dist-STD/plotting/data/sync_check/'
+    output_dir = 'log_norm-STD_inhf/check/sync_check/'
     os.makedirs(output_dir, exist_ok=True)
     
-    namespace = 'lognormal'
-    run_name = 'spontaneous' # 根據您的檔案命名習慣調整 (例如 rasters.py 裡是寫死的)
-    npat = 1000
-    
-    # 定義要跑的系統列表 (與 rasters.py 保持一致)
-    systems = ['hebb_smooth_rate']
+    # 定義要跑的系統列表
+    systems = ['hebb', 'sfa_hebb']
     # systems = ['hebb', 'rate', 'hebb_smooth_rate', 'sfa_hebb', 'sfa_rate', 'sfa_hebb_smooth_rate']
     
+    time_info = f"t={args.start}s"
+    if args.duration:
+        time_info += f" to {args.start + args.duration}s"
+    else:
+        time_info += " to end"
+
     print(f"Starting Health Check for {len(systems)} systems...")
-    print(f"Reading from: {data_path(namespace)}")
-    print(f"Saving plots to: {output_dir}")
-    print("-" * 60)
+    print(f"  - Namespace: {args.namespace}")
+    print(f"  - Time Window: {time_info}")
+    print(f"  - Saving plots to: {output_dir}")
+    print("-" * 75)
     print(f"{'System':<20} | {'Max Sync':<10} | {'Avg Corr':<10} | {'Avg Dur (ms)':<15} | {'Status'}")
-    print("-" * 60)
+    print("-" * 75)
 
     for system in tqdm(systems):
-        # 1. Load
-        traces, sparse_events = load_activations(system, npat, run_name, namespace)
+        # 1. Load with Time Slicing
+        traces, sparse_events = load_activations(
+            system, 
+            args.npat, 
+            args.run_name, 
+            args.namespace, 
+            start_time=args.start, 
+            duration=args.duration
+        )
         
         if traces is None:
             continue
             
         # 2. Analyze & Plot
-        metrics = diagnose_and_save(traces, sparse_events, system, output_dir)
+        metrics = diagnose_and_save(traces, sparse_events, system, output_dir, time_info)
         
-        # 3. Simple Console Report
-        # 簡單的狀態判斷邏輯
+        # 3. Report
         status = "✅ OK"
-        if metrics['max_sync'] > (npat * 0.3): status = "⚠️ High Sync"
+        if metrics['max_sync'] > (args.npat * 0.3): status = "⚠️ High Sync"
         if metrics['avg_corr'] > 0.2: status = "⚠️ High Corr"
         
         print(f"{system:<20} | {metrics['max_sync']:<10} | {metrics['avg_corr']:.4f}     | {metrics['avg_dur']:.1f}            | {status}")
 
-    print("-" * 60)
+    print("-" * 75)
     print("Done.")

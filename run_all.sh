@@ -24,19 +24,19 @@ fi
 # ===================================================
 # --- Main parameters ---
 PATTERNS=1000
-SYSTEM_NAME="hebb" # 'hebb', 'rate', or 'hebb_smooth_rate'
+SYSTEM_NAME="sfa_hebb" # 'hebb', 'rate', or 'hebb_smooth_rate'
 
 # --- log ---
 SYSTEM_CONFIG="config/std_systems/${SYSTEM_NAME}.yml"
-TRAIN_RUN_CONFIG="config/runtypes/default_train.yml" # changed to long(6000s) for std only
-SPONT_RUN_CONFIG="config/runtypes/spontaneous.yml"
+TRAIN_RUN_CONFIG="config/runtypes/default_train_long.yml" # changed to long(6000s) for std only
+SPONT_RUN_CONFIG="config/runtypes/spontaneous_short_inhf.yml"
 COND_RUN_CONFIG="config/runtypes/conductances.yml"
 PERT_RUN_CONFIG="config/runtypes/perturbation.yml"
 STIM_RUN_CONFIG="config/runtypes/stimuli100ms.yml"
 
 # --- Step-Specific Parameters ---
 # Step 4 (Activations)
-ACT_RUN_NAME="spontaneous" 
+ACT_RUN_NAME="spontaneous_short_inhf1.05_" 
 # Step 6 (GStats)
 GSTATS_NAME="${SYSTEM_NAME}_conductances"
 GSTATS_NAMESPACE="lognormal"

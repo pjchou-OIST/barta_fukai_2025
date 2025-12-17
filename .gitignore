@@ -17,6 +17,7 @@ logs/
 tmp/
 new/
 dist-STD/
+log_norm-STD*
 output/
 chain/
 *.log
