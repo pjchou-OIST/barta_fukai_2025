@@ -196,7 +196,8 @@ def run_network(
     isolate=None,
     chunk_size=None, # no longer used
     plast_ii=False,
-    inhf=None,
+    inhf_setting=None,
+    taui_setting=6,
     shuffle=False,
     U_SE_mean: float = 0.07436, # Changed from U_SE_val, now represents the MEAN
     U_SE_std: float = 0.0,     # Added standard deviation for U_SE
@@ -349,7 +350,7 @@ def run_network(
     logging.info(f"Ensuring clean build: Deleting '{build_path}' if it exists...")
     shutil.rmtree(build_path, ignore_errors=True)
     set_device('cpp_standalone', directory=build_path)
-    prefs.devices.cpp_standalone.openmp_threads = 32
+    prefs.devices.cpp_standalone.openmp_threads = 25
     logging.info(f"Using unique build directory: {build_path}")
     # ==================================
 
@@ -373,7 +374,7 @@ def run_network(
 
     # Synaptic parameters
     taue = 6 * ms   # excitatory synapse time constant
-    taui = 6 * ms   # inhibitory synapse time constant
+    taui = taui_setting * ms   # inhibitory synapse time constant
     Ee = 0 * mV     # excitatory reversal potential
     Ei = -80 * mV   # inhibitory reversal potential
 
@@ -588,11 +589,11 @@ def run_network(
     G_inh.basethr = omega
 
     # Inhibitory scaling factor (EI only)
-    if inhf is None:
+    if inhf_setting is None:
         G_exc.inhf = 1
         G_inh.inhf = 1
     else:
-        G_exc.inhf = inhf
+        G_exc.inhf = inhf_setting
         G_inh.inhf = 1
 
     # Connected-network-only components

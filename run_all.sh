@@ -24,19 +24,20 @@ fi
 # ===================================================
 # --- Main parameters ---
 PATTERNS=1000
-SYSTEM_NAME="sfa_hebb" # 'hebb', 'rate', or 'hebb_smooth_rate'
+SYSTEM_NAME="hebb" # 'hebb', 'rate', or 'hebb_smooth_rate'
 
 # --- log ---
+SET_NUM=4
 SYSTEM_CONFIG="config/std_systems/${SYSTEM_NAME}.yml"
-TRAIN_RUN_CONFIG="config/runtypes/default_train_long.yml" # changed to long(6000s) for std only
-SPONT_RUN_CONFIG="config/runtypes/spontaneous_short_inhf.yml"
+TRAIN_RUN_CONFIG="config/runtypes_taui/default_train_set${SET_NUM}.yml" # changed to long(6000s) for std only
+SPONT_RUN_CONFIG="config/runtypes_taui/spontaneous_short_set${SET_NUM}.yml"
 COND_RUN_CONFIG="config/runtypes/conductances.yml"
 PERT_RUN_CONFIG="config/runtypes/perturbation.yml"
 STIM_RUN_CONFIG="config/runtypes/stimuli100ms.yml"
 
 # --- Step-Specific Parameters ---
 # Step 4 (Activations)
-ACT_RUN_NAME="spontaneous_short_inhf1.05_" 
+ACT_RUN_NAME="spontaneous_short_set${SET_NUM}_" 
 # Step 6 (GStats)
 GSTATS_NAME="${SYSTEM_NAME}_conductances"
 GSTATS_NAMESPACE="lognormal"
@@ -45,7 +46,7 @@ GSTATS_NAMESPACE="lognormal"
 #                 LOGGING SETUP
 # ===================================================
 RUN_TIMESTAMP=$(date +%Y-%m-%d_%H%M%S)
-LOG_DIR="slurm_logstd_logs/run_${RUN_TIMESTAMP}_steps_${START_STEP}-${END_STEP}"
+LOG_DIR="slurm_taui_logs/run_${RUN_TIMESTAMP}_steps_${START_STEP}-${END_STEP}"
 mkdir -p $LOG_DIR
 
 # --- *** Save Parameters to Log File *** ---
